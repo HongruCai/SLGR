@@ -3,14 +3,14 @@
 
 models=(
     "t5-small"
-    # "t5-base"
-    # "t5-large"
-    # "t5-3b"
-    # "t5-11b"
+    "t5-base"
+    "t5-large"
+    "t5-3b"
+    "t5-11b"
 )
 
 batch_size=256 # 可以根据显存大小调整
-gpus=4 # 可以根据实际数量调整
+gpus=8 # 可以根据实际数量调整
 learning_rate=3e-5
 num_epochs=1
 

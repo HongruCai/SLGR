@@ -66,23 +66,14 @@ def rescore_keys(model, inputs, list_of_decoded, batch_size=100, length_penalty=
                  strip_from_bos=[], strip_from_eos=[]):
     device = next(model.parameters()).device
 
-    if inputs is None:
-        batch_in = [[model.config.bos_token_id, model.config.eos_token_id]] * len(list_of_decoded)
-    else:
-        batch_in = list(inputs)
-
-    list_of_decoded = [[x[1] if isinstance(x[0], float) else x for x in xx] for xx in list_of_decoded]
-
+    # Prepare input_ids (batch_in)
+    batch_in = list(inputs)
     maxlen = max([len(i) for i in batch_in])
-
     input_ids = [i + ([model.config.pad_token_id] * (maxlen - len(i))) for i in batch_in]
-    input_ids = [torch.LongTensor(i).to(device) for i in input_ids]
-    input_ids = torch.stack(input_ids, 0)
-    attention_mask = input_ids != model.config.pad_token_id
-    attention_mask = attention_mask.byte()
+    input_ids = torch.stack([torch.LongTensor(i).to(device) for i in input_ids], 0)
 
-
-
+    # Prepare decoded outputs (list_of_decoded)
+    list_of_decoded = [[x[1] if isinstance(x[0], float) else x for x in xx] for xx in list_of_decoded]
     decoder_inputs = enumerate(list_of_decoded)
     decoder_inputs = [(idx, di) for idx, ddi in decoder_inputs for di in ddi]
 
@@ -91,48 +82,41 @@ def rescore_keys(model, inputs, list_of_decoded, batch_size=100, length_penalty=
     for batch in chunked(tqdm(decoder_inputs) if progress_bar else decoder_inputs, batch_size):
 
         idxs = []
-        batch_in_decoder_orig = []
-        batch_in_decoder = []
+        batch_targets = []
         for i, di in batch:
-            stripped = [model.config.decoder_start_token_id] + prefix + strip(di, strip_from_bos, strip_from_eos)
+            stripped = prefix + strip(di, strip_from_bos, strip_from_eos)
             if stripped:
                 idxs.append(i)
-                batch_in_decoder_orig.append(di)
-                batch_in_decoder.append(stripped)
+                batch_targets.append(stripped)
 
-        batch_in_decoder = [torch.LongTensor(di) for di in batch_in_decoder]
-        batch_in_decoder = [
-            torch.cat(
-                [torch.LongTensor([model.config.decoder_start_token_id]), di]
-            ) if di[0] != model.config.decoder_start_token_id else di for di in batch_in_decoder]
-        maxlen = max([len(di) for di in batch_in_decoder])
+        # Tokenize targets
+        batch_targets = [torch.LongTensor(t).to(device) for t in batch_targets]
+        max_target_len = max(len(t) for t in batch_targets)
+        batch_targets = [torch.cat([t, torch.full((max_target_len - len(t),), model.config.pad_token_id, device=device)]) for t in batch_targets]
+        batch_targets = torch.stack(batch_targets, 0)
+        # print('batch_targets shape:',batch_targets.shape)
+        # Combine input and target for Llama
+        batch_input_ids = torch.cat([input_ids[idxs], batch_targets], dim=1)
+        # print('batch_input_ids shape:',batch_input_ids.shape)
+        # Forward pass to get logits
+        logits = model(input_ids=batch_input_ids).logits
 
-        batch_decoder_input_ids = [
-            torch.cat(
-                [di, torch.LongTensor([model.config.pad_token_id] * (maxlen - len(di)))])
-            for di in batch_in_decoder]
-        batch_decoder_input_ids = [di for di in batch_decoder_input_ids]
-        batch_decoder_input_ids = torch.stack(batch_decoder_input_ids, 0).to(device)
-
-        batch_input_ids = torch.stack([input_ids[idx] for idx in idxs], 0)
-        # batch_attention_mask = torch.stack([attention_mask[idx] for idx in idxs], 0)
-        # batch_encoder_outputs = torch.stack([encoder_outputs[idx] for idx in idxs], 0)
-
-        logits = model(
-            input_ids=batch_input_ids
-        ).logits
-
+        # Compute log probabilities for target tokens
         logprobs = logits.log_softmax(-1)
+        target_logprobs = torch.gather(logprobs[:, input_ids.shape[1] - 1:-1, :], 2, batch_targets[:, 1:].unsqueeze(-1)).squeeze(-1)
 
-        logprobs = torch.gather(logprobs, -1, batch_decoder_input_ids[:, 1:].unsqueeze(-1))
-        logprobs[batch_decoder_input_ids[:, 1:] < 2] = 0.0
-        logprobs = logprobs[:, len(prefix):]
-        logprobs = logprobs.squeeze(-1).sum(-1)
-        logprobs = logprobs.tolist()
+        # Mask out padding tokens
+        mask = batch_targets[:, 1:] != model.config.pad_token_id
+        target_logprobs = target_logprobs * mask
+        logprobs_sum = target_logprobs.sum(dim=1)
 
-        for i, di, bdi, ll in zip(idxs, batch_in_decoder_orig, batch_decoder_input_ids, logprobs):
-            sco = ll / (len(di) ** length_penalty)
-            all_out[i].append((sco, di))
+        # Normalize by length penalty
+        lengths = mask.sum(dim=1).float()
+        scores = logprobs_sum / (lengths ** length_penalty)
+
+        # Collect results
+        for i, di, score in zip(idxs, batch, scores.tolist()):
+            all_out[i].append((score, di[1]))
 
     return [v for k, v in sorted(all_out.items())]
 

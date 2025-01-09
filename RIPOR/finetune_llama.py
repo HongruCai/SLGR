@@ -137,8 +137,7 @@ if __name__ == '__main__':
                                             #load_in_8bit=True,
                                             #load_in_4bit=True,
                                             #bnb_4bit_compute_dtype=torch_dtype,
-                                            #  device_map=device_map
-                                             )
+                                             device_map=device_map)
 
     model.config.use_cache = False
     model.config.pad_token_id = model.config.eos_token_id

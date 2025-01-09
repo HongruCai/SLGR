@@ -32,7 +32,7 @@ stopword_token_ids = [
     7,    # to
     6,    # and
 ]
-test_tokenizer = AutoTokenizer.from_pretrained('/next_share/hf_cache/hub/models--meta-llama--Meta-Llama-3-8B/snapshots/b6887ce03ea47d068bf8502ba6ed27f8c5c12a6b')
+
 class IndexBasedLogitsProcessor(LogitsProcessor):
     """
     Class that masks logit, meant to be used during decoding. The logit mask is determined by finding the range of rows

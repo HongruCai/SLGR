@@ -1,7 +1,12 @@
 # custom
-MINDER_Llama/output/
-MINDER_T5/output/
+output/
+result/
 data/
+
+upload.py
+MINDER_Llama/scripts/full_pipeline.sh
+MINDER_Llama/scripts/test_llama.sh
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
