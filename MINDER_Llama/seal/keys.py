@@ -66,13 +66,11 @@ def rescore_keys(model, inputs, list_of_decoded, batch_size=100, length_penalty=
                  strip_from_bos=[], strip_from_eos=[]):
     device = next(model.parameters()).device
 
-    # Prepare input_ids (batch_in)
     batch_in = list(inputs)
     maxlen = max([len(i) for i in batch_in])
     input_ids = [i + ([model.config.pad_token_id] * (maxlen - len(i))) for i in batch_in]
     input_ids = torch.stack([torch.LongTensor(i).to(device) for i in input_ids], 0)
 
-    # Prepare decoded outputs (list_of_decoded)
     list_of_decoded = [[x[1] if isinstance(x[0], float) else x for x in xx] for xx in list_of_decoded]
     decoder_inputs = enumerate(list_of_decoded)
     decoder_inputs = [(idx, di) for idx, ddi in decoder_inputs for di in ddi]
@@ -110,11 +108,9 @@ def rescore_keys(model, inputs, list_of_decoded, batch_size=100, length_penalty=
         target_logprobs = target_logprobs * mask
         logprobs_sum = target_logprobs.sum(dim=1)
 
-        # Normalize by length penalty
         lengths = mask.sum(dim=1).float()
         scores = logprobs_sum / (lengths ** length_penalty)
 
-        # Collect results
         for i, di, score in zip(idxs, batch, scores.tolist()):
             all_out[i].append((score, di[1]))
 

@@ -76,8 +76,8 @@ def batch_generate_keys(searcher, queries, constrained_generation=True):
             decoded_body = fm_index_generate(
                 searcher.bart_model, searcher.fm_index,
                 **batch, 
-                min_length=prefix_len_query+15,
-                max_length=prefix_len_query+15,
+                min_length=prefix_len_query+50,
+                max_length=prefix_len_query+50,
                 length_penalty=searcher.length_penalty,
                 num_beams=searcher.beam,
                 disable_fm_index=not constrained_generation,
@@ -109,7 +109,7 @@ def batch_generate_keys(searcher, queries, constrained_generation=True):
                 fk[:] = [(s, k)  for s, k in fk if k and searcher.fm_index.get_count(k) > 0]
                 # print('fm_filtered---3', fk)
             # print(len(found_keys[0]))
-            # print('found_keys1 filtered------------------------------', found_keys)
+            print('found_keys1 filtered------------------------------', found_keys)
             if searcher.rescore and searcher.use_markers:
 
                 input_tokens = searcher.bart_tokenizer(inputs, padding=False)['input_ids']
@@ -133,7 +133,7 @@ def batch_generate_keys(searcher, queries, constrained_generation=True):
             #     new_fk = found_keys[i]
             #     for s, k in new_fk:
             #         print('new_fk 22222', s, searcher.bart_tokenizer.decode(k))
-            # print('found_keys2------------------------------',found_keys)
+            print('found_keys2------------------------------',found_keys)
 
         else:
             found_keys = [[] for _ in inputs]
@@ -780,11 +780,11 @@ class SEALSearcher:
         model = AutoModelForCausalLM.from_pretrained(base_path, torch_dtype=precision)
         tokenizer = LlamaTokenizer.from_pretrained(base_path)
 
-        model = PeftModel.from_pretrained(
-                model,
-                bart_model_path,
-                torch_dtype=precision,
-            )
+        # model = PeftModel.from_pretrained(
+        #         model,
+        #         bart_model_path,
+        #         torch_dtype=precision,
+        #     )
         
         tokenizer.pad_token = tokenizer.eos_token
         model.config.pad_token_id = tokenizer.eos_token_id

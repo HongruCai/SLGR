@@ -4,7 +4,6 @@ result/
 data/
 
 upload.py
-MINDER_Llama/scripts/full_pipeline.sh
 MINDER_Llama/scripts/test_llama.sh
 
 # Byte-compiled / optimized / DLL files

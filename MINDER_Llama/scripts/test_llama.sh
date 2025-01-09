@@ -4,7 +4,7 @@ python ./seal/search.py \
 --topics_format dpr_qas \
 --topics ../data/NQ/nq-test.csv \
 --output_format dpr \
---output result/llama_7b_norescoreep1.json \
+--output result/llama_7b_debug.json \
 --checkpoint output/Llama-2-7b-chat-hf \
 --jobs 5 \
 --progress \
@@ -16,7 +16,6 @@ python ./seal/search.py \
 --dont_decode_title \
 --dont_unigram_scores \
 --debug \
---dont_use_markers
 
 
-python ./seal/evaluate_output.py --file result/llama_7b_norescoreep1.json
+python ./seal/evaluate_output.py --file result/llama_7b_debug.json

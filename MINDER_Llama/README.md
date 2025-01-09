@@ -22,6 +22,7 @@ pip install -e .
 ```bash
 cd MINDER_Llama #保持在MINDER_Llama目录下
 bash scripts/full_pipeline.sh
+bash scripts/eval_loss.sh #记录loss
 ``` 
 
 
