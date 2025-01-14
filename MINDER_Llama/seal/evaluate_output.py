@@ -229,7 +229,7 @@ all_dict = {}
 hits=[0.0]*100
 with open(args.file, "r") as f:
         data = json.load(f)
-        for line in data:
+        for line in tqdm(data):
             question = line["question"]
             answers = line["answers"]
             all_dict[line["question"]] = 1

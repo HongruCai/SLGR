@@ -10,7 +10,7 @@ models=(
 )
 
 batch_size=256 # 可以根据显存大小调整
-gpus=8 # 可以根据实际数量调整
+gpus=4 # 可以根据实际数量调整
 learning_rate=3e-5
 num_epochs=1
 

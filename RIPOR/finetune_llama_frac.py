@@ -100,7 +100,7 @@ def parse_args():
     parser.add_argument('--local_rank', type=int, default=0, help='local rank')
     parser.add_argument('--float16', action='store_true', help='use float16')
     parser.add_argument('--bf16', action='store_true', help='use bf16')
-    
+    parser.add_argument('--fraction', type=float, default=None, help='fraction of dataset to use')
     return parser.parse_args()
 
 
@@ -116,7 +116,7 @@ if __name__ == '__main__':
     train_batch_size = train_args.train_batch_size
     source_length = train_args.source_length
 
-    output_dir_name = train_args.output_dir + '/' + train_args.model_name.split('/')[-1] 
+    output_dir_name = train_args.output_dir + '/' + train_args.model_name.split('/')[-1] + '_frac' + str(train_args.fraction)
     
     device_map = "auto"
     world_size = int(os.environ.get("WORLD_SIZE", 1))
@@ -197,7 +197,7 @@ if __name__ == '__main__':
         save_only_model=True,
     )
 
-    train_dataset = LLaMaDataset(tokenizer, train_args.docid_to_smtid, train_args.query_to_docid, source_length)
+    train_dataset = LLaMaDataset(tokenizer, train_args.docid_to_smtid, train_args.query_to_docid, source_length, fraction=train_args.fraction)
 
     print('training dataset size: ', len(train_dataset))
     print(train_dataset[0])

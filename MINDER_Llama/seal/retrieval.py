@@ -76,8 +76,8 @@ def batch_generate_keys(searcher, queries, constrained_generation=True):
             decoded_body = fm_index_generate(
                 searcher.bart_model, searcher.fm_index,
                 **batch, 
-                min_length=prefix_len_query+50,
-                max_length=prefix_len_query+50,
+                min_length=prefix_len_query+15,
+                max_length=prefix_len_query+15,
                 length_penalty=searcher.length_penalty,
                 num_beams=searcher.beam,
                 disable_fm_index=not constrained_generation,
@@ -96,7 +96,7 @@ def batch_generate_keys(searcher, queries, constrained_generation=True):
             # for i in range(len(found_keys)):
             #     print('batch_str[i]', batch_str[i])
             #     new_fk = found_keys[i]
-            #     for s, k in new_fk:
+            #     for s, k in new_fk[:100]:
             #         print('new_fk',s, searcher.bart_tokenizer.decode(k))
             for fk in found_keys:
                 fk[:] = [(s, k[1:] if k[0] in searcher.strip_token_ids else k) for s, k in fk if k]
@@ -109,7 +109,7 @@ def batch_generate_keys(searcher, queries, constrained_generation=True):
                 fk[:] = [(s, k)  for s, k in fk if k and searcher.fm_index.get_count(k) > 0]
                 # print('fm_filtered---3', fk)
             # print(len(found_keys[0]))
-            print('found_keys1 filtered------------------------------', found_keys)
+            # print('found_keys1 filtered------------------------------', found_keys)
             if searcher.rescore and searcher.use_markers:
 
                 input_tokens = searcher.bart_tokenizer(inputs, padding=False)['input_ids']
@@ -131,10 +131,9 @@ def batch_generate_keys(searcher, queries, constrained_generation=True):
             # for i in range(len(found_keys)):
             #     print('batch_str2', batch_str[i])
             #     new_fk = found_keys[i]
-            #     for s, k in new_fk:
+            #     for s, k in new_fk[:100]:
             #         print('new_fk 22222', s, searcher.bart_tokenizer.decode(k))
-            print('found_keys2------------------------------',found_keys)
-
+            # sys.exit()
         else:
             found_keys = [[] for _ in inputs]
 

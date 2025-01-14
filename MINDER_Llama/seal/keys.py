@@ -95,16 +95,17 @@ def rescore_keys(model, inputs, list_of_decoded, batch_size=100, length_penalty=
         # print('batch_targets shape:',batch_targets.shape)
         # Combine input and target for Llama
         batch_input_ids = torch.cat([input_ids[idxs], batch_targets], dim=1)
-        # print('batch_input_ids shape:',batch_input_ids.shape)
+        attention_mask = (batch_input_ids != model.config.pad_token_id).long()
+
         # Forward pass to get logits
-        logits = model(input_ids=batch_input_ids).logits
+        logits = model(input_ids=batch_input_ids, attention_mask=attention_mask).logits
 
         # Compute log probabilities for target tokens
         logprobs = logits.log_softmax(-1)
-        target_logprobs = torch.gather(logprobs[:, input_ids.shape[1] - 1:-1, :], 2, batch_targets[:, 1:].unsqueeze(-1)).squeeze(-1)
+        target_logprobs = torch.gather(logprobs[:, input_ids.shape[1] - 1:, :], 2, batch_targets[:, :].unsqueeze(-1)).squeeze(-1)
 
         # Mask out padding tokens
-        mask = batch_targets[:, 1:] != model.config.pad_token_id
+        mask = batch_targets != model.config.pad_token_id
         target_logprobs = target_logprobs * mask
         logprobs_sum = target_logprobs.sum(dim=1)
 
@@ -113,8 +114,72 @@ def rescore_keys(model, inputs, list_of_decoded, batch_size=100, length_penalty=
 
         for i, di, score in zip(idxs, batch, scores.tolist()):
             all_out[i].append((score, di[1]))
+    return [v for k, v in sorted(all_out.items())]
+
+
+@torch.inference_mode()
+def rescore_keys_test(model, inputs, list_of_decoded, batch_size=100, length_penalty=0.0, progress_bar=False, prefix=[],
+                      strip_from_bos=[], strip_from_eos=[]):
+    device = next(model.parameters()).device
+
+    # Prepare inputs
+    input_ids = [torch.LongTensor(i).to(device) for i in inputs]
+    all_out = {i: [] for i in range(len(inputs))}
+
+    for input_idx, input_seq in enumerate(tqdm(input_ids) if progress_bar else input_ids):
+        current_decoded = list_of_decoded[input_idx]
+        current_decoded = [x[1] if isinstance(x[0], float) else x for x in current_decoded]
+        
+        # Prepare all targets for current input
+        all_targets = []
+        for decoded_seq in current_decoded:
+            stripped = strip(decoded_seq, strip_from_bos, strip_from_eos)
+            if stripped:
+                all_targets.append(torch.LongTensor(stripped).to(device))
+        
+        # Process targets in smaller batches
+        all_scores = []
+        for batch_targets in chunked(all_targets, batch_size):
+            # Pad targets to the same length
+            max_target_len = max(len(target) for target in batch_targets)
+            padded_targets = [
+                torch.cat([target, torch.LongTensor([model.config.pad_token_id] * (max_target_len - len(target))).to(device)])
+                for target in batch_targets
+            ]
+
+            batch_input_ids = [
+                torch.cat([input_seq, target], dim=0) for target in padded_targets
+            ]
+            batch_input_ids = torch.stack(batch_input_ids, dim=0)
+
+            logits = model(input_ids=batch_input_ids).logits
+
+            # Extract logits corresponding to the target tokens
+            input_len = len(input_seq)
+            logprobs = logits.log_softmax(dim=-1)
+
+            # Calculate log probabilities for all targets
+            target_logprobs = torch.stack([
+                logprobs[i, input_len:input_len + len(target), :].gather(1, target.unsqueeze(-1)).squeeze(-1)
+                for i, target in enumerate(padded_targets)
+            ])
+
+            mask = torch.stack([target != model.config.pad_token_id for target in padded_targets])
+            masked_logprobs = target_logprobs * mask
+
+            # Sum log probabilities and calculate scores
+            logprobs_sums = masked_logprobs.sum(dim=1).tolist()
+            lengths = mask.sum(dim=1).tolist()
+
+            scores = [logprobs_sum / (length ** length_penalty) for logprobs_sum, length in zip(logprobs_sums, lengths)]
+
+            all_scores.extend(scores)
+        for decoded_seq, score in zip(all_targets, all_scores):
+            all_out[input_idx].append((score, decoded_seq))
 
     return [v for k, v in sorted(all_out.items())]
+
+
 
 
 # @torch.inference_mode()

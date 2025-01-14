@@ -86,6 +86,7 @@ def main():
     # dataset = load_dataset("json", data_files={"train": [source_path, target_path]}, streaming=True)
 
     train_dataset = Dataset.from_generator(lambda: load_data_stream(source_path, target_path))
+    print(len(train_dataset))
     # train_dataset = train_dataset.select(range(10000))
     tokenized_train_dataset = train_dataset.map(lambda examples: preprocess_function(examples, tokenizer), batched=True)
 

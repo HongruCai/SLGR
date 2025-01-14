@@ -209,17 +209,15 @@ class T5Dataset(Dataset):
         self.max_source_len = max_source_len
         self.max_target_len = max_target_len
         with open(docid_to_smtid) as fin:
-            docid_to_smtid = ujson.load(fin)
+            docid2smtid = ujson.load(fin)
 
         with open(query_to_docid, "r") as f:
-            total_lines = sum(1 for _ in f)
+            query_to_docid = ujson.load(f)
         
         self.examples = []
-        with open(query_to_docid) as fin:
-            for i, line in tqdm(enumerate(fin), total=total_lines, desc="Processing Dataset"):
-                example = ujson.loads(line)
-                docid, query = example["docid"], example["query"]
-                smtid = docid_to_smtid[docid]
+        for query, docids in query_to_docid.items():
+            for docid in docids:
+                smtid = docid2smtid[docid]
                 self.examples.append((query, smtid))
 
     def __len__(self):
@@ -250,6 +248,47 @@ class T5Dataset(Dataset):
         return {
             "input_ids": source_encodings["input_ids"].squeeze(),
             "labels": labels.squeeze(),
+        }
+
+
+class T5OriDataset(Dataset):
+    def __init__(self, tokenizer, docid_to_smtid, query_to_docid,  max_source_len=128, max_target_len=36):
+
+        self.tokenizer = tokenizer
+        self.max_source_len = max_source_len
+        self.max_target_len = max_target_len
+        with open(docid_to_smtid) as fin:
+            docid_to_smtid = ujson.load(fin)
+
+        with open(query_to_docid, "r") as f:
+            total_lines = sum(1 for _ in f)
+        
+        self.examples = []
+        with open(query_to_docid) as fin:
+            for i, line in tqdm(enumerate(fin), total=total_lines, desc="Processing Dataset"):
+                example = ujson.loads(line)
+                docid, query = example["docid"], example["query"]
+                smtid = docid_to_smtid[docid]
+                self.examples.append((query, smtid))
+
+    def __len__(self):
+        return len(self.examples)
+
+    def __getitem__(self, idx):
+        query, ids = self.examples[idx]
+        
+        source_encodings = self.tokenizer(
+            query,
+            padding="max_length",
+            max_length=self.max_source_len,
+            truncation=True,
+            return_tensors="pt",
+        )
+        labels = torch.LongTensor(ids[1:])
+        
+        return {
+            "input_ids": source_encodings["input_ids"].squeeze(),
+            "labels": labels,
         }
 
 

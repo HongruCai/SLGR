@@ -9,44 +9,39 @@ from typing import Dict, List
 from datasets import load_dataset
 from peft import TaskType, LoraConfig, get_peft_model, PeftModel
 import argparse
-import ujson
-from tqdm import tqdm
 
 class LLaMaDataset(Dataset):
-    def __init__(self, tokenizer, docid_to_smtid, query_to_docid, max_length, fraction=None):
+    def __init__(self, tokenizer, source_file, target_file, max_length, fraction=None):
         self.tokenizer = tokenizer
-        self.max_source_len = max_length
+        self.max_length = max_length
         self.fraction = fraction
-        with open(docid_to_smtid) as fin:
-            docid2smtid = ujson.load(fin)
 
-        with open(query_to_docid, "r") as f:
-            query_to_docid = ujson.load(f)
+        with open(source_file, 'r', encoding="utf-8") as f:
+            source_data = f.readlines()
+
+        with open(target_file, 'r', encoding="utf-8") as f:
+            target_data = f.readlines()
+        assert len(source_data) == len(target_data), "Source and target files must have the same number of lines."
+
+        self.dataset = list(zip(source_data, target_data))
         
-        self.examples = []
-        for query, docids in query_to_docid.items():
-            for docid in docids:
-                smtid = docid2smtid[docid]
-                self.examples.append((query, smtid))
         if self.fraction is not None:
-            subset_size = int(len(self.examples) * self.fraction)
-            sampled_indices = random.sample(range(len(self.examples)), subset_size)
-            self.examples = [self.examples[i] for i in sampled_indices]
-
-
+            subset_size = int(len(self.dataset) * self.fraction)
+            sampled_indices = random.sample(range(len(self.dataset)), subset_size)
+            self.dataset = [self.dataset[i] for i in sampled_indices]
 
     def __len__(self):
-        return len(self.examples)
+        return len(self.dataset)
 
     def __getitem__(self, idx):
-        source_text, ids = self.examples[idx]
+        source_text, target_text = self.dataset[idx]
         source_text = source_text.strip()
-        return preprocess_function(source_text, ids, self.tokenizer, self.max_source_len)
+        target_text = target_text.strip()
+        return preprocess_function(source_text, target_text, self.tokenizer, self.max_length)
 
 
-def preprocess_function(prefix_text, ids, tokenizer, max_length):
-    target_text = " ".join(f"c_{c}" for c in ids[1:])
-    response_text = f"{prefix_text} {target_text}</s>"
+def preprocess_function(prefix_text, target_text, tokenizer, max_length):
+    response_text = f"{prefix_text}{target_text}</s>"
 
     input = tokenizer(
         response_text,
@@ -80,8 +75,7 @@ def preprocess_function(prefix_text, ids, tokenizer, max_length):
 def parse_args():
     parser = argparse.ArgumentParser(description="Finetune Llama")
 
-    parser.add_argument('--docid_to_smtid', type=str, default='../data/MSMARCO/filtered_docid_to_smtid.json', help='docid to smtid mapping')
-    parser.add_argument('--query_to_docid', type=str, default='../data/MSMARCO/filtered_query_to_docid.json', help='query to docid mapping')
+    parser.add_argument('--data_path', type=str, default='data', help='param data path')
     parser.add_argument('--output_dir', type=str, default='output', help='output directory')
     parser.add_argument('--model_name', type=str, default='meta-llama/Llama-2-7b-chat-hf', help='model name')
     parser.add_argument('--train_epoch', type=int, default=1, help='number of training epochs')
@@ -92,14 +86,15 @@ def parse_args():
     parser.add_argument('--source_length', type=int, default=128, help='source length')
     parser.add_argument('--warmup_ratio', type=float, default=0.1, help='warmup ratio')
     parser.add_argument('--eval_strategy', type=str, default='epoch', help='evaluation strategy')
-    parser.add_argument('--save_strategy', type=str, default='no', help='save strategy')
+    parser.add_argument('--save_strategy', type=str, default='epoch', help='save strategy')
     parser.add_argument('--save_total_limit', type=int, default=5, help='save total limit')
-    parser.add_argument('--logging_steps', type=int, default=500, help='logging steps')
+    parser.add_argument('--logging_steps', type=int, default=100, help='logging steps')
     parser.add_argument('--deepseed_config', type=str, default=None, help='deepspeed config file')
     parser.add_argument('--gradient_accumulation_steps', type=int, default=1, help='gradient accumulation steps')
     parser.add_argument('--local_rank', type=int, default=0, help='local rank')
     parser.add_argument('--float16', action='store_true', help='use float16')
     parser.add_argument('--bf16', action='store_true', help='use bf16')
+    parser.add_argument('--fraction', type=float, default=None, help='fraction of dataset to use')
     
     return parser.parse_args()
 
@@ -107,8 +102,9 @@ def parse_args():
 if __name__ == '__main__':
 
     train_args = parse_args()
+    data_path = train_args.data_path
 
-    print('training on: ', train_args.docid_to_smtid)
+    print('training on: ', data_path)
 
     model_name = train_args.model_name
 
@@ -116,7 +112,7 @@ if __name__ == '__main__':
     train_batch_size = train_args.train_batch_size
     source_length = train_args.source_length
 
-    output_dir_name = train_args.output_dir + '/' + train_args.model_name.split('/')[-1] 
+    output_dir_name = train_args.output_dir + '/' + train_args.model_name.split('/')[-1] + '_frac' + str(train_args.fraction)
     
     device_map = "auto"
     world_size = int(os.environ.get("WORLD_SIZE", 1))
@@ -140,13 +136,11 @@ if __name__ == '__main__':
     model = LlamaForCausalLM.from_pretrained(model_name, 
                                              torch_dtype=torch_dtype,
                                              config=config,
-                                             device_map=device_map)
-    extra_tokens = []
-    for count in range(256):
-        extra_tokens.append('c_'+str(count))
-    print('number of extra tokens: ', len(extra_tokens))
-    tokenizer.add_tokens(extra_tokens)
-    model.resize_token_embeddings(len(tokenizer))
+                                            #load_in_8bit=True,
+                                            #load_in_4bit=True,
+                                            #bnb_4bit_compute_dtype=torch_dtype,
+                                            #  device_map=device_map
+                                             )
 
     model.config.use_cache = False
     model.config.pad_token_id = model.config.eos_token_id
@@ -170,7 +164,7 @@ if __name__ == '__main__':
         output_dir=output_dir_name,
 
         num_train_epochs=train_args.train_epoch,
-        # max_steps=1000,      
+        # max_steps=train_args.max_steps,      
         per_device_train_batch_size=train_batch_size, 
         per_device_eval_batch_size=train_batch_size, 
         dataloader_num_workers=10,
@@ -188,7 +182,7 @@ if __name__ == '__main__':
         logging_steps=train_args.logging_steps,
 
         # deepspeed=train_args.deepseed_config,
-        # gradient_accumulation_steps=train_args.gradient_accumulation_steps,
+        gradient_accumulation_steps=train_args.gradient_accumulation_steps,
         fp16=train_args.float16,
         bf16=train_args.bf16,
 
@@ -197,10 +191,9 @@ if __name__ == '__main__':
         save_only_model=True,
     )
 
-    train_dataset = LLaMaDataset(tokenizer, train_args.docid_to_smtid, train_args.query_to_docid, source_length)
+    train_dataset = LLaMaDataset(tokenizer, data_path + '/llama_train.source', data_path + '/llama_train.target', source_length, fraction=train_args.fraction)
 
     print('training dataset size: ', len(train_dataset))
-    print(train_dataset[0])
 
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer, padding='max_length', max_length=source_length, return_tensors="pt")
 

@@ -5,7 +5,7 @@ from transformers import Trainer, TrainingArguments, TrainerCallback, DataCollat
 import torch
 import logging
 import argparse
-from utils import QueryEvalCallback, TrainerwithTemperature, T5Dataset
+from utils import QueryEvalCallback, TrainerwithTemperature, T5Dataset, T5OriDataset
 from peft import TaskType, LoraConfig, get_peft_model, PeftModel
 from datetime import datetime
 
@@ -13,8 +13,8 @@ from datetime import datetime
 def parse_args():
     parser = argparse.ArgumentParser(description="Train T5 model")
 
-    parser.add_argument('--docid_to_smtid', type=str, default='../data/MSMARCO/docid_to_smtid.json', help='docid to smtid mapping')
-    parser.add_argument('--query_to_docid', type=str, default='../data/MSMARCO/query_to_docid.train.json', help='query to docid mapping')
+    parser.add_argument('--docid_to_smtid', type=str, default='../data/MSMARCO/filtered_docid_to_smtid.json', help='docid to smtid mapping')
+    parser.add_argument('--query_to_docid', type=str, default='../data/MSMARCO/filtered_query_to_docid.json', help='query to docid mapping')
     parser.add_argument('--output_dir', type=str, default='output/', help='output directory')
     parser.add_argument('--model_name', type=str, default='t5-base', help='model name')
     parser.add_argument('--train_epoch', type=int, default=1, help='number of training epochs')
@@ -126,9 +126,10 @@ if __name__ == '__main__':
     )
     model.config.use_cache = False
 
+    # train_dataset = T5OriDataset(tokenizer, docid_to_smtid=train_args.docid_to_smtid, query_to_docid=train_args.query_to_docid ,max_source_len=source_length, max_target_len=target_length)
     train_dataset = T5Dataset(tokenizer, docid_to_smtid=train_args.docid_to_smtid, query_to_docid=train_args.query_to_docid ,max_source_len=source_length, max_target_len=target_length)
 
-
+    print(train_dataset[0])
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer, padding='max_length', max_length=source_length)
 
     os.makedirs(output_dir_name, exist_ok=True)

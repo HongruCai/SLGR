@@ -23,6 +23,11 @@ pip install -e .
 cd MINDER_Llama #保持在MINDER_Llama目录下
 bash scripts/full_pipeline.sh
 bash scripts/eval_loss.sh #记录loss
+
+#补充
+# 不同数据集大小的实验
+bash scripts/finetune_llama_frac.sh #会分别训练四个模型，使用0.2，0.4，0.6，0.8的数据集
+bash scripts/eval_loss_frac.sh #记录loss，单卡
 ``` 
 
 
