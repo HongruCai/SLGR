@@ -176,13 +176,14 @@ def main():
 
     # Load model and tokenizer
     tokenizer = LlamaTokenizer.from_pretrained(model_path)
-    base_model = LlamaForCausalLM.from_pretrained(base_path, torch_dtype=precision)
+    base_model = LlamaForCausalLM.from_pretrained(base_path, torch_dtype=precision, device_map='auto')
     base_model.resize_token_embeddings(len(tokenizer))
 
     model = PeftModel.from_pretrained(
                 base_model,
                 model_path,
                 torch_dtype=precision,
+                 device_map='auto'
             )
 
     model = model.to("cuda")

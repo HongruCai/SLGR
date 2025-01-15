@@ -63,8 +63,8 @@ def batch_generate_keys(searcher, queries, constrained_generation=True):
             prompt = "→ Answer these questions: \n Q: Who wrote the book the origin of species A: On 24th November 1859 the book 'The Origin of Species' was published and this famous book is written by Charles Darwin. \n Q:"
 
             batch_str = inputs
-            if searcher.use_markers:
-                batch_str = [prompt +i + " A: " for i in batch_str]
+            # if searcher.use_markers:
+            #     batch_str = [prompt +i + " A: " for i in batch_str]
 
             # print(batch_str)
             batch = searcher.bart_tokenizer(batch_str, return_tensors='pt', padding=True, truncation=True)
@@ -110,23 +110,23 @@ def batch_generate_keys(searcher, queries, constrained_generation=True):
                 # print('fm_filtered---3', fk)
             # print(len(found_keys[0]))
             # print('found_keys1 filtered------------------------------', found_keys)
-            if searcher.rescore and searcher.use_markers:
+            # if searcher.rescore and searcher.use_markers:
 
-                input_tokens = searcher.bart_tokenizer(inputs, padding=False)['input_ids']
+            #     input_tokens = searcher.bart_tokenizer(inputs, padding=False)['input_ids']
                 
-                found_keys = rk.rescore_keys(
-                    searcher.bart_model,
-                    input_tokens,
-                    found_keys,
-                    batch_size=100,
-                    length_penalty=0.0,
-                    strip_from_bos=[
-                        searcher.title_bos_token_id,
-                        searcher.code_bos_token_id],
-                    strip_from_eos=[
-                        searcher.title_eos_token_id,
-                        searcher.code_eos_token_id,
-                        searcher.bart_model.config.eos_token_id])
+            #     found_keys = rk.rescore_keys(
+            #         searcher.bart_model,
+            #         input_tokens,
+            #         found_keys,
+            #         batch_size=100,
+            #         length_penalty=0.0,
+            #         strip_from_bos=[
+            #             searcher.title_bos_token_id,
+            #             searcher.code_bos_token_id],
+            #         strip_from_eos=[
+            #             searcher.title_eos_token_id,
+            #             searcher.code_eos_token_id,
+            #             searcher.bart_model.config.eos_token_id])
 
             # for i in range(len(found_keys)):
             #     print('batch_str2', batch_str[i])
@@ -779,11 +779,11 @@ class SEALSearcher:
         model = AutoModelForCausalLM.from_pretrained(base_path, torch_dtype=precision)
         tokenizer = LlamaTokenizer.from_pretrained(base_path)
 
-        # model = PeftModel.from_pretrained(
-        #         model,
-        #         bart_model_path,
-        #         torch_dtype=precision,
-        #     )
+        model = PeftModel.from_pretrained(
+                model,
+                bart_model_path,
+                torch_dtype=precision,
+            )
         
         tokenizer.pad_token = tokenizer.eos_token
         model.config.pad_token_id = tokenizer.eos_token_id

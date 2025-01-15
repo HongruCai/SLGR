@@ -214,20 +214,21 @@ def main():
     precision = get_model_precision()
 
     # Load model and tokenizer
-    model = LlamaForCausalLM.from_pretrained(base_path, torch_dtype=precision)
+    model = LlamaForCausalLM.from_pretrained(base_path, torch_dtype=precision, device_map='auto')
     tokenizer = LlamaTokenizer.from_pretrained(model_path)
 
     model = PeftModel.from_pretrained(
                 model,
                 model_path,
                 torch_dtype=precision,
+                device_map='auto'
             )
     tokenizer.padding_side = "right"
     tokenizer.pad_token = tokenizer.eos_token
     model.config.pad_token_id = model.config.eos_token_id
 
 
-    model = model.to("cuda")
+    # model = model.to("cuda")
     print('Model loaded from:', model_path)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.num_processes) as executor:
