@@ -17,7 +17,6 @@ python ./seal/search.py \
 --fm_index  ../data/FMIndex/Llama/llama_psgs_w100.fm_index \
 --dont_decode_title \
 --dont_unigram_scores \
---debug
 
 #llama_13b
 TOKENIZERS_PARALLELISM=false \
@@ -28,6 +27,25 @@ python ./seal/search.py \
 --output result/llama_13b_res.json \
 --checkpoint output/Llama-2-13b-chat-hf \
 --backbone meta-llama/Llama-2-13b-chat-hf \
+--jobs 20 \
+--progress \
+--device cuda:0 \
+--batch_size 1 \
+--beam 100 \
+--decode_query False \
+--fm_index  ../data/FMIndex/Llama/llama_psgs_w100.fm_index \
+--dont_decode_title \
+--dont_unigram_scores \
+
+# llama_70b
+TOKENIZERS_PARALLELISM=false \
+python ./seal/search.py \
+--topics_format dpr_qas \
+--topics ../data/NQ/nq-test.csv \
+--output_format dpr \
+--output result/llama_70b_res.json \
+--checkpoint output/Llama-2-70b-chat-hf \
+--backbone meta-llama/Llama-2-70b-chat-hf \
 --jobs 20 \
 --progress \
 --device cuda:0 \
@@ -115,3 +133,4 @@ python ./seal/search.py \
 --fm_index  ../data/FMIndex/Llama/llama_psgs_w100.fm_index \
 --dont_decode_title \
 --dont_unigram_scores \
+

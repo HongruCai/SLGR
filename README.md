@@ -54,17 +54,19 @@
 ### MINDER_Llama文件夹
 
 ```bash
+conda activate mllama
 bash scripts/test_llama.sh
 ```
 单卡，可以修改jobs, 但是注意batch size只能为1，否则会有bug
 
 切换模型需要修改backbone, checkpoint, output
 
-llama-70b可能无法运行，不跑
+Llama-70b如果无法单卡运行，则放弃，因为使用decive_map='auto'会报错
 
 ### MIDNER_T5文件夹
 
 ```bash
+conda activate mt5
 bash scripts/test_t5.sh
 ```
 单卡，可以修改jobs, batch size也可以增大
