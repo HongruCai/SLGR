@@ -63,8 +63,8 @@ def batch_generate_keys(searcher, queries, constrained_generation=True):
             prompt = "→ Answer these questions: \n Q: Who wrote the book the origin of species A: On 24th November 1859 the book 'The Origin of Species' was published and this famous book is written by Charles Darwin. \n Q:"
 
             batch_str = inputs
-            # if searcher.use_markers:
-            #     batch_str = [prompt +i + " A: " for i in batch_str]
+            if searcher.use_markers:
+                batch_str = [prompt + i + " A: " for i in batch_str]
 
             # print(batch_str)
             batch = searcher.bart_tokenizer(batch_str, return_tensors='pt', padding=True, truncation=True)
@@ -76,8 +76,8 @@ def batch_generate_keys(searcher, queries, constrained_generation=True):
             decoded_body = fm_index_generate(
                 searcher.bart_model, searcher.fm_index,
                 **batch, 
-                min_length=prefix_len_query+15,
-                max_length=prefix_len_query+15,
+                min_length=prefix_len_query+20,
+                max_length=prefix_len_query+20,
                 length_penalty=searcher.length_penalty,
                 num_beams=searcher.beam,
                 disable_fm_index=not constrained_generation,
@@ -91,8 +91,6 @@ def batch_generate_keys(searcher, queries, constrained_generation=True):
             for fk in decoded_body:
                 filtered_fk = [(s, k[prefix_len_query:]) for s, k in fk]
                 found_keys.append(filtered_fk)
-            # print(len(found_keys[0]))
-            # print('found_keys1------------------------------',found_keys)
             # for i in range(len(found_keys)):
             #     print('batch_str[i]', batch_str[i])
             #     new_fk = found_keys[i]
@@ -107,13 +105,10 @@ def batch_generate_keys(searcher, queries, constrained_generation=True):
                     fk[:] = [(s, k) for s, k in fk if len(k) == searcher.min_length]
                     # print('fm_filtered---2', fk)
                 fk[:] = [(s, k)  for s, k in fk if k and searcher.fm_index.get_count(k) > 0]
-                # print('fm_filtered---3', fk)
-            # print(len(found_keys[0]))
-            # print('found_keys1 filtered------------------------------', found_keys)
-            # if searcher.rescore and searcher.use_markers:
 
+            
+            # if searcher.rescore and searcher.use_markers:
             #     input_tokens = searcher.bart_tokenizer(inputs, padding=False)['input_ids']
-                
             #     found_keys = rk.rescore_keys(
             #         searcher.bart_model,
             #         input_tokens,
@@ -127,7 +122,7 @@ def batch_generate_keys(searcher, queries, constrained_generation=True):
             #             searcher.title_eos_token_id,
             #             searcher.code_eos_token_id,
             #             searcher.bart_model.config.eos_token_id])
-
+            
             # for i in range(len(found_keys)):
             #     print('batch_str2', batch_str[i])
             #     new_fk = found_keys[i]
@@ -644,7 +639,7 @@ class SEALSearcher:
         self.docids = fm_index.labels
         self.set_params(params)
 
-        if 'bart' in self.backbone:
+        if 'bart' in self.backbone or 'llama' in self.backbone:
             self.title_bos_token = '</s>'
             self.title_bos_token_id = 2
             self.title_eos_token = '@@'
@@ -766,8 +761,9 @@ class SEALSearcher:
     @staticmethod
     def load_bart(bart_model_path: str, device: str = "cpu", backbone="facebook/bart-large", fairseq_checkpoint=True):
 
-        base_path = 'meta-llama/Llama-2-7b-chat-hf'
-        
+        base_path = backbone
+        # base_path = './output/llama/7B'
+
         import torch
         if torch.cuda.is_available() and torch.cuda.is_bf16_supported():
             logger.log(logging.WARN, "BF16 supported, using BF16")
@@ -784,11 +780,11 @@ class SEALSearcher:
                 bart_model_path,
                 torch_dtype=precision,
             )
-        
         tokenizer.pad_token = tokenizer.eos_token
         model.config.pad_token_id = tokenizer.eos_token_id
 
         model.to(device)
+        logger.log(logging.WARN, f"base model successfully loaded from {base_path}")
         logger.log(logging.WARN, f"llama model successfully loaded from {bart_model_path}")
         return tokenizer, model
 

@@ -1,5 +1,5 @@
-# 推理，记录Recall，可以调整jobs, batch_size
 
+# t5-small
 TOKENIZERS_PARALLELISM=false \
 python ./seal/search.py \
 --topics_format dpr_qas \
@@ -8,17 +8,18 @@ python ./seal/search.py \
 --output result/t5_small_res.json \
 --checkpoint ./output/t5-small  \
 --backbone t5-small \
---jobs 10 \
+--jobs 20 \
 --progress \
 --device cuda:0 \
---batch_size 32 \
+--batch_size 64 \
 --beam 15 \
---decode_query stable \
+--decode_query false \
 --fm_index ../data/FMIndex/T5/t5_psgs_w100.fm_index \
 --dont_fairseq_checkpoint \
---max_passage_hits 100 \
---hits 100 \
+--dont_decode_title \
+--dont_unigram_scores 
 
+# t5-base
 TOKENIZERS_PARALLELISM=false \
 python ./seal/search.py \
 --topics_format dpr_qas \
@@ -27,17 +28,18 @@ python ./seal/search.py \
 --output result/t5_base_res.json \
 --checkpoint ./output/t5-base  \
 --backbone t5-base \
---jobs 10 \
+--jobs 20 \
 --progress \
 --device cuda:0 \
---batch_size 32 \
+--batch_size 64 \
 --beam 15 \
---decode_query stable \
+--decode_query false \
 --fm_index ../data/FMIndex/T5/t5_psgs_w100.fm_index \
 --dont_fairseq_checkpoint \
---max_passage_hits 100 \
---hits 100 \
+--dont_decode_title \
+--dont_unigram_scores \
 
+# t5-large
 TOKENIZERS_PARALLELISM=false \
 python ./seal/search.py \
 --topics_format dpr_qas \
@@ -46,17 +48,18 @@ python ./seal/search.py \
 --output result/t5_large_res.json \
 --checkpoint ./output/t5-large  \
 --backbone t5-large \
---jobs 10 \
+--jobs 20 \
 --progress \
 --device cuda:0 \
---batch_size 32 \
+--batch_size 64 \
 --beam 15 \
---decode_query stable \
+--decode_query false \
 --fm_index ../data/FMIndex/T5/t5_psgs_w100.fm_index \
 --dont_fairseq_checkpoint \
---max_passage_hits 100 \
---hits 100 \
+--dont_decode_title \
+--dont_unigram_scores \
 
+# t5-3b
 TOKENIZERS_PARALLELISM=false \
 python ./seal/search.py \
 --topics_format dpr_qas \
@@ -65,17 +68,18 @@ python ./seal/search.py \
 --output result/t5_3b_res.json \
 --checkpoint ./output/t5-3b  \
 --backbone t5-3b \
---jobs 10 \
+--jobs 20 \
 --progress \
 --device cuda:0 \
---batch_size 32 \
+--batch_size 64 \
 --beam 15 \
---decode_query stable \
+--decode_query false \
 --fm_index ../data/FMIndex/T5/t5_psgs_w100.fm_index \
 --dont_fairseq_checkpoint \
---max_passage_hits 100 \
---hits 100 \
+--dont_decode_title \
+--dont_unigram_scores \
 
+# t5-11b
 TOKENIZERS_PARALLELISM=false \
 python ./seal/search.py \
 --topics_format dpr_qas \
@@ -84,13 +88,13 @@ python ./seal/search.py \
 --output result/t5_11b_res.json \
 --checkpoint ./output/t5-11b  \
 --backbone t5-11b \
---jobs 10 \
+--jobs 20 \
 --progress \
 --device cuda:0 \
---batch_size 32 \
+--batch_size 64 \
 --beam 15 \
---decode_query stable \
+--decode_query false \
 --fm_index ../data/FMIndex/T5/t5_psgs_w100.fm_index \
 --dont_fairseq_checkpoint \
---max_passage_hits 100 \
---hits 100 \
+--dont_decode_title \
+--dont_unigram_scores \
