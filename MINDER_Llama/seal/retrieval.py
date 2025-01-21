@@ -639,7 +639,7 @@ class SEALSearcher:
         self.docids = fm_index.labels
         self.set_params(params)
 
-        if 'bart' in self.backbone or 'llama' in self.backbone:
+        if 'bart' in self.backbone or 'Llama' in self.backbone or 'llama' in self.backbone:
             self.title_bos_token = '</s>'
             self.title_bos_token_id = 2
             self.title_eos_token = '@@'
