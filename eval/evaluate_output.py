@@ -217,38 +217,72 @@ def has_answer(answers, text, match_type="string") -> bool:
     return False
 
 import argparse
-
+import math
 parser = argparse.ArgumentParser()
 parser.add_argument("--file", type=str, default="")
 args = parser.parse_args()
 
 query_dict = {}
 all_dict = {}
+hits = [0.0] * 100
+average_precisions = []
+ndcg_scores = []
+reciprocal_ranks = []  
 
-
-hits=[0.0]*100
 with open(args.file, "r") as f:
-        data = json.load(f)
-        for line in tqdm(data):
-            question = line["question"]
-            answers = line["answers"]
-            all_dict[line["question"]] = 1
-            if "ctxs" not in line:
-                print('no ctxs')
-                continue
-            if len(line["ctxs"]) !=100:
-                print(len(line["ctxs"]))
-            for i in range(len(line["ctxs"])):
-                retrieved_p_text = line["ctxs"][i]
-                if has_answer(answers, retrieved_p_text['title']+ " "+retrieved_p_text['text'].split("||")[0]):
-                    query_dict[line["question"]] = 1
-                    hits[i]+=1
-                    break
-print(len(query_dict))
-print(len(all_dict))
+    data = json.load(f)
+    for line in tqdm(data):
+        question = line["question"]
+        answers = line["answers"]
+        all_dict[question] = 1
+        retrieved_p_texts = line["ctxs"]
 
-print('reccall@100', float(len(query_dict))/len(all_dict))
+        relevant_ranks = []
+        relevance_scores = []
 
-for i in [1,3,5,20,50,100]:
+        for i, ctx in enumerate(retrieved_p_texts[:10]):
+            retrieved_p_text = ctx['title'] + " " + ctx['text'].split("||")[0]
+            if has_answer(answers, retrieved_p_text):
+                relevant_ranks.append(i + 1)  
+                relevance_scores.append(1)  
+            else:
+                relevance_scores.append(0)  
+        
+
+        if relevant_ranks:
+            ap = sum([(idx + 1) / rank for idx, rank in enumerate(relevant_ranks)]) / len(relevant_ranks)
+            average_precisions.append(ap)
+        else:
+            average_precisions.append(0)
+
+        dcg = sum([rel / math.log2(rank + 1) for rank, rel in enumerate(relevance_scores, start=1)])
+        idcg = sum([1 / math.log2(i + 1) for i in range(1, min(10, len(relevant_ranks)) + 1)])
+        ndcg = dcg / idcg if idcg > 0 else 0
+        ndcg_scores.append(ndcg)
+
+        rr_10 = 0
+        for rank, rel in enumerate(relevance_scores, start=1):
+            if rel == 1:  
+                rr_10 = 1 / rank
+                break
+        reciprocal_ranks.append(rr_10)
+
+        for i, ctx in enumerate(retrieved_p_texts):
+            retrieved_p_text = ctx['title'] + " " + ctx['text'].split("||")[0]
+            if has_answer(answers, retrieved_p_text):
+                query_dict[question] = 1
+                hits[i] += 1
+                break
+
+print('Evaluating on', args.file)
+for i in [1, 3, 5, 20, 50, 100]:
     new_hits = hits[:i]
-    print('recall @ ' + str(i), sum(new_hits)/len(all_dict))
+    print('Recall@' + str(i), sum(new_hits) / len(all_dict))
+
+map10 = sum(average_precisions) / len(all_dict)
+ndcg10 = sum(ndcg_scores) / len(all_dict)
+mrr = sum(reciprocal_ranks) / len(all_dict)
+
+print("MAP@10:", map10)
+print("NDCG@10:", ndcg10)
+print("MRR@10:", mrr)

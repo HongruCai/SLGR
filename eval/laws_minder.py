@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import least_squares
+from matplotlib.ticker import MaxNLocator
 
 # 定义拟合函数
 def scaling_law(params, n):
@@ -56,23 +57,32 @@ a2, b2, c2 = result2.x
 n2_smooth = np.logspace(np.log10(n2.min()), np.log10(n2.max()), 1000)
 predicted_l2 = scaling_law(result2.x, n2_smooth)
 
+
+
 # 绘制图像
-plt.figure(figsize=(10, 7))
-plt.scatter(n1, l1, color='red', label='Data Group 1')
-plt.plot(n1_smooth, predicted_l1, color='blue', label=f'Fit Group 1\n$a={a1:.4f}$, $b={b1:.4f}$, $c={c1:.4f}$\n$R^2={r_squared1:.4f}$')
+plt.figure(figsize=(6, 4))
+# plt.rcParams['font.family'] = 'Calibri'  # 设置字体为 Arial
+plt.rcParams['font.size'] = 15  # 设置字体大小为 14pt
+plt.rcParams['font.weight'] = 'bold'
+plt.scatter(n1, l1, color='#f3d266', label='T5 Series', s=150)
+plt.plot(n1_smooth, predicted_l1, color='#4d4d4d', linestyle='--',linewidth=3)
 
-plt.scatter(n2, l2, color='orange', label='Data Group 2')
-plt.plot(n2_smooth, predicted_l2, color='green', label=f'Fit Group 2\n$a={a2:.4f}$, $b={b2:.4f}$, $c={c2:.4f}$\n$R^2={r_squared2:.4f}$')
+plt.scatter(n2, l2, color='#4e87b2', label='LLaMA Series',s=150)
+plt.plot(n2_smooth, predicted_l2, color='#4d4d4d', linestyle='--',linewidth=3)
 
-plt.xscale('log')  # 对数刻度
-plt.xlabel("Model Size (n)")
-plt.ylabel("Metric (l)")
-plt.title("Scaling Law Fitting for Two Data Groups")
+plt.axhline(c1, color='#f3d266', linestyle=':',linewidth=3)
+plt.axhline(c2, color='#4e87b2', linestyle=':',linewidth=3)
+
+plt.ylim(0.0031, 0.0038)
+plt.gca().yaxis.set_major_locator(MaxNLocator(nbins=5))  
+plt.xscale('log')
+plt.xlim(0, 1e11)
+
 plt.legend()
-plt.grid(True, linestyle='--', alpha=0.6)
-plt.savefig('./result/scaling_law_two_groups.png', dpi=300, bbox_inches='tight')
+plt.savefig('./result/scaling_law_minder.png', bbox_inches='tight')
+plt.savefig('./result/scaling_law_minder.svg', format="svg", bbox_inches='tight')
 plt.show()
 
 # 打印结果
-print(f"Group 1: Scaling Law: l = ({a1:.4f} / n) ^ {b1:.4f} + {c1:.4f}, R² = {r_squared1:.4f}")
-print(f"Group 2: Scaling Law: l = ({a2:.4f} / n) ^ {b2:.4f} + {c2:.4f}, R² = {r_squared2:.4f}")
+print(f"Group 1: Scaling Law: l = ({a1} / n) ^ {b1} + {c1}, R² = {r_squared1 }")
+print(f"Group 2: Scaling Law: l = ({a2} / n) ^ {b2} + {c2 }, R² = {r_squared2 }")

@@ -183,7 +183,7 @@ def main():
                 base_model,
                 model_path,
                 torch_dtype=precision,
-                 device_map='auto'
+                device_map='auto'
             )
 
     model = model.to("cuda")
