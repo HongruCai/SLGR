@@ -1,6 +1,5 @@
 
 
-# # 记录loss, 单卡多进程，可以调整进程数num_processes
 
 # llama-7b
 python scripts/record_loss_llama_mp.py \
@@ -8,10 +7,10 @@ python scripts/record_loss_llama_mp.py \
     --csv_file "../data/NQ/nq-test.csv" \
     --model_path "./output/Llama-2-7b-chat-hf/" \
     --base_path "meta-llama/Llama-2-7b-chat-hf" \
-    --output_file "result/llama_7b_loss.json" \
+    --output_file "result/llama_7b_ori_loss.json" \
     --total_docs 21015324 \
     --num_neg_samples 256 \
-    --num_processes 10  
+    --num_processes 20  
 
 # # llama-13b
 # python scripts/record_loss_llama_mp.py \

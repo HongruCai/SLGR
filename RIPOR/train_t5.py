@@ -130,6 +130,7 @@ if __name__ == '__main__':
     train_dataset = T5Dataset(tokenizer, docid_to_smtid=train_args.docid_to_smtid, query_to_docid=train_args.query_to_docid ,max_source_len=source_length, max_target_len=target_length)
 
     print(train_dataset[0])
+    print(len(train_dataset))
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer, padding='max_length', max_length=source_length)
 
     os.makedirs(output_dir_name, exist_ok=True)

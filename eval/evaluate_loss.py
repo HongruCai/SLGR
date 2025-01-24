@@ -26,6 +26,9 @@ eval_failes = ['result/RIPOR/t5/rt5_small_loss.json', 'result/RIPOR/t5/rt5_base_
                'result/RIPOR/t5/rt5_large_loss.json', 'result/RIPOR/t5/rt5_3b_loss.json',
                'result/RIPOR/t5/rt5_11b_loss.json',]
 
+# RIPOR LLAMA
+eval_failes = ['result/RIPOR/llama/rllama_7b_loss.json', 'result/RIPOR/llama/rllama_13b_loss.json', 'result/RIPOR/llama/rllama_70b_loss_mid1.json',
+               'result/RIPOR/llama/rllama_7b02_loss.json', 'result/RIPOR/llama/rllama_7b04_loss.json', 'result/RIPOR/llama/rllama_7b06_loss.json', 'result/RIPOR/llama/rllama_7b08_loss.json']
 all_res = {}
 for eval_file in tqdm(eval_failes):
     query_scores = []

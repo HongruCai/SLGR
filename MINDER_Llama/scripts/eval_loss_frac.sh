@@ -1,8 +1,5 @@
 
 
-# 四个不同的数据大小，分别是0.2, 0.4, 0.6, 0.8
-# 修改模型路径和输出文件名，其他参数不变
-
 python scripts/record_loss_llama_mp.py \
     --index "../data/FMIndex/Llama/llama_psgs_w100.fm_index" \
     --csv_file "../data/NQ/nq-test.csv" \

@@ -1,4 +1,4 @@
-# batch size最大为256
+
 
 accelerate launch --num_processes 8 record_loss_llama_mp.py \
     --model_path ./output/Llama/Llama-2-7b-chat-hf_frac0.2 \

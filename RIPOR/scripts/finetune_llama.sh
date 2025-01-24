@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# 模型列表
+
 models=(
     "meta-llama/Llama-2-7b-chat-hf" 
     "meta-llama/Llama-2-13b-chat-hf" 
     "meta-llama/Llama-2-70b-chat-hf"
     )
 
-# 训练参数
+
 output_dir_base="output/Llama"
 train_epoch=1
 learning_rate=3e-4
@@ -15,7 +15,7 @@ train_batch_size=16
 source_length=128
 use_bf16="--bf16"  
 
-# 循环训练不同大小的模型
+
 for model_name in "${models[@]}"; do
     echo "Fine-tuning model: ${model_name}"
     

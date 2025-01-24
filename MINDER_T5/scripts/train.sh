@@ -1,5 +1,4 @@
 
-# 训练
 
 models=(
     "t5-small"
@@ -9,8 +8,8 @@ models=(
     "t5-11b"
 )
 
-batch_size=256 # 可以根据显存大小调整
-gpus=4 # 可以根据实际数量调整
+batch_size=256 
+gpus=4 
 learning_rate=3e-5
 num_epochs=1
 
@@ -33,7 +32,6 @@ for model in "${models[@]}"; do
 done
 
 
-# 合并模型
 
 python scripts/merge_save.py \
     --base_model_name t5-small \

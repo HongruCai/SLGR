@@ -60,27 +60,29 @@ predicted_l2 = scaling_law(result2.x, n2_smooth)
 
 
 # 绘制图像
-plt.figure(figsize=(6, 4))
+plt.figure(figsize=(6, 2.5))
 # plt.rcParams['font.family'] = 'Calibri'  # 设置字体为 Arial
-plt.rcParams['font.size'] = 15  # 设置字体大小为 14pt
+plt.rcParams['font.size'] = 12  # 设置字体大小为 14pt
 plt.rcParams['font.weight'] = 'bold'
-plt.scatter(n1, l1, color='#f3d266', label='T5 Series', s=150)
+plt.scatter(n1, l1, color='#f3d266', label='T5 Series', s=100)
 plt.plot(n1_smooth, predicted_l1, color='#4d4d4d', linestyle='--',linewidth=3)
 
-plt.scatter(n2, l2, color='#4e87b2', label='LLaMA Series',s=150)
+plt.scatter(n2, l2, color='#4e87b2', label='LLaMA Series',s=100)
 plt.plot(n2_smooth, predicted_l2, color='#4d4d4d', linestyle='--',linewidth=3)
 
 plt.axhline(c1, color='#f3d266', linestyle=':',linewidth=3)
 plt.axhline(c2, color='#4e87b2', linestyle=':',linewidth=3)
 
-plt.ylim(0.0031, 0.0038)
+
 plt.gca().yaxis.set_major_locator(MaxNLocator(nbins=5))  
+# 实验部分的图，intro的图则注释掉
+plt.ylim(0.0031, 0.00386)
 plt.xscale('log')
 plt.xlim(0, 1e11)
 
-plt.legend()
-plt.savefig('./result/scaling_law_minder.png', bbox_inches='tight')
-plt.savefig('./result/scaling_law_minder.svg', format="svg", bbox_inches='tight')
+plt.legend(loc='upper right')
+plt.savefig('./result/scaling_law_minder_intro.png', bbox_inches='tight')
+plt.savefig('./result/scaling_law_minder_intro.svg', format="svg", bbox_inches='tight')
 plt.show()
 
 # 打印结果

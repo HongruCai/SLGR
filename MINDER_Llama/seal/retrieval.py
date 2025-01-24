@@ -60,48 +60,19 @@ def batch_generate_keys(searcher, queries, constrained_generation=True):
         input_tokens = searcher.bart_tokenizer(inputs, padding=False)['input_ids']
 
         if searcher.decode_body:
-            prompt = "→ Answer these questions: \n Q: Who wrote the book the origin of species A: On 24th November 1859 the book 'The Origin of Species' was published and this famous book is written by Charles Darwin. \n Q:"
+            # prompt = "→ Answer these questions: \n Q: Who wrote the book the origin of species A: On 24th November 1859 the book 'The Origin of Species' was published and this famous book is written by Charles Darwin. \n Q:"
             prompt = "→ Answer these questions: \n Q:"
-            prompt = f'''→ Answer these questions:
-Q: Who wrote the book "The Origin of Species"?
-A: On 24th November 1859 the book "The Origin of Species" was published and this famous book is written by Charles Darwin.
-Q: Who is the author of "A Brief History of Time"?
-A: "A Brief History of Time" is written by the renowned physicist Stephen Hawking, and it was first published in 1988.
-Q: 
-'''
-            prompt = f'''→ Answer these questions:
-Q: Who wrote the book "The Origin of Species"?
-A: On 24th November 1859 the book "The Origin of Species" was published and this famous book is written by Charles Darwin.
-Q: Who is the author of "A Brief History of Time"?
-A: "A Brief History of Time" is written by the renowned physicist Stephen Hawking, and it was first published in 1988.
-Q: What is the capital city of France?
-A: The capital city of France is Paris, a major European city and a global center for art, fashion, and culture.
-Q: 
-'''
-            prompt = f'''→ Answer these questions:
-Q: Who wrote "The Origin of Species"?
-A: Charles Darwin.
-Q: Who is the author of "A Brief History of Time"?
-A: Stephen Hawking.
-Q: Who got the first Nobel Prize in Physics?
-A: Wilhelm Conrad Röntgen.
-Q: When is the next Deadpool movie being released?
-A: May 18, 2018.
-Q: 
-'''
-            prompt = f'''→ Answer these questions:
-Q: Who wrote "The Origin of Species"?
-A: Charles Darwin.
-Q: Who is the author of "A Brief History of Time"?
-A: Stephen Hawking.
-Q: Who got the first Nobel Prize in Physics?
-A: Wilhelm Conrad Röntgen.
-Q: When is the next Deadpool movie being released?
-A: May 18, 2018.
-Q: What is the speed of light in a vacuum?
-A: 300,000 kilometers per second.
-Q: 
-'''
+            # prompt = "→ Answer these questions: \n Q: Who wrote the book the origin of species? \n A: This famous book is written by Charles Darwin. \n Q: What is the capital city of France? \n A: The capital city of France is Paris. \n Q: "
+#             prompt = f'''→ Answer these questions:
+# Q: Who wrote the book "The Origin of Species"?
+# A: On 24th November 1859 the book "The Origin of Species" was published and this famous book is written by Charles Darwin.
+# Q: Who is the author of "A Brief History of Time"?
+# A: "A Brief History of Time" is written by the renowned physicist Stephen Hawking, and it was first published in 1988.
+# Q: What is the capital city of France?
+# A: The capital city of France is Paris, a major European city and a global center for art, fashion, and culture.
+# Q: 
+# '''
+
             
 
             batch_str = inputs
@@ -817,11 +788,11 @@ class SEALSearcher:
         model = AutoModelForCausalLM.from_pretrained(base_path, torch_dtype=precision)
         tokenizer = LlamaTokenizer.from_pretrained(base_path)
 
-        # model = PeftModel.from_pretrained(
-        #         model,
-        #         bart_model_path,
-        #         torch_dtype=precision,
-        #     )
+        model = PeftModel.from_pretrained(
+                model,
+                bart_model_path,
+                torch_dtype=precision,
+            )
         tokenizer.pad_token = tokenizer.eos_token
         model.config.pad_token_id = tokenizer.eos_token_id
 

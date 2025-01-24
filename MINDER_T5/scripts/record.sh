@@ -1,4 +1,4 @@
-# 记录Loss，可以修改num_processes来
+
 
 python scripts/record_loss.py \
     --index ../data/FMIndex/T5/t5_psgs_w100.fm_index \

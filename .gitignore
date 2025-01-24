@@ -2,6 +2,7 @@
 output/
 result/
 data/
+eval/
 
 upload.py
 MINDER_Llama/scripts/test_llama.sh

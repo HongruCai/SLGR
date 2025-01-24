@@ -41,16 +41,16 @@ def load_dev_queries(file_path):
     return queries
   
 def compute_loss(model, tokenizer, inputs, ids, device='cuda'):
-    # 将 inputs 和 ids 拼接成一个完整的序列
-    input_text = inputs[0]  # 单个输入文本
+
+    input_text = inputs[0] 
     ids_text = " ".join(f"c_{c}" for c in ids)
     full_text = f"{input_text} {ids_text} </s>"
 
-    # 编码输入
+
     encodings = tokenizer(
         full_text,
         padding="max_length",
-        max_length=128,  # 根据具体任务调整
+        max_length=128, 
         truncation=True,
         return_tensors="pt"
     ).to(device)
@@ -58,15 +58,13 @@ def compute_loss(model, tokenizer, inputs, ids, device='cuda'):
     input_ids = encodings["input_ids"]
     attention_mask = encodings["attention_mask"]
 
-    # 构造标签，将 query 部分 mask 掉
+
     labels = input_ids.clone()
     query_len = len(tokenizer(input_text, truncation=True, return_tensors="pt")["input_ids"][0])
-    labels[:, :query_len] = -100  # mask 掉 query 部分
+    labels[:, :query_len] = -100  
     labels[attention_mask == 0] = -100
 
-    # print(labels)
-    # print(input_ids)
-    # 计算 loss
+
     with torch.no_grad():
         outputs = model(input_ids=input_ids, labels=labels)
     
@@ -75,17 +73,16 @@ def compute_loss(model, tokenizer, inputs, ids, device='cuda'):
 
 def compute_loss_batch(model, tokenizer, inputs, ids_list, device='cuda'):
 
-    # 将 inputs 和 ids_list 拼接成完整序列
     full_texts = []
     for input_text, ids in zip(inputs, ids_list):
         ids_text = " ".join(f"c_{c}" for c in ids)
         full_texts.append(f"{input_text} {ids_text} </s>")
 
-    # 编码输入
+
     encodings = tokenizer(
         full_texts,
         padding="max_length",
-        max_length=128,  # 根据具体任务调整
+        max_length=128,  
         truncation=True,
         return_tensors="pt"
     ).to(device)
@@ -93,14 +90,12 @@ def compute_loss_batch(model, tokenizer, inputs, ids_list, device='cuda'):
     input_ids = encodings["input_ids"]
     attention_mask = encodings["attention_mask"]
 
-    # 构造标签，将 query 部分 mask 掉
     labels = input_ids.clone()
     for i, input_text in enumerate(inputs):
         query_len = len(tokenizer(input_text, truncation=True, return_tensors="pt")["input_ids"][0])
-        labels[i, :query_len] = -100  # mask 掉 query 部分
+        labels[i, :query_len] = -100 
     labels[attention_mask == 0] = -100
 
-    # 计算 loss
     with torch.no_grad():
         outputs = model(input_ids=input_ids, labels=labels)
     
@@ -108,25 +103,21 @@ def compute_loss_batch(model, tokenizer, inputs, ids_list, device='cuda'):
 
 
 def process_query(model, tokenizer, docid_to_smtids, qid, query, query2doc_pos, all_docids, neg_nums, batch_size=32):
-    """
-    处理单个 query 的正负样本 loss 计算，支持负样本批量计算。
-    """
     pos_docs = query2doc_pos.get(qid, [])
     docs = list(all_docids - set(pos_docs))
     neg_docs = random.sample(docs, neg_nums)
 
-    # 获取正负样本的 SMT IDs
     pos_ids = [docid_to_smtids[docid][1:] for docid in pos_docs]
     neg_ids = [docid_to_smtids[docid][1:] for docid in neg_docs]
     input_text = query
 
-    # 正样本 loss 计算
+
     pos_losses = []
     for pos_input, pos_id in zip(len(pos_docs) * [input_text], pos_ids):
         loss = compute_loss(model, tokenizer, [pos_input], pos_id)
         pos_losses.append(loss)
 
-    # 负样本 loss 计算（分批处理）
+
     neg_losses = []
     for i in range(0, len(neg_ids), batch_size):
         batch_neg_ids = neg_ids[i:i + batch_size]
@@ -197,19 +188,19 @@ def main():
 
             with tqdm(total=total_queries, desc="Processing queries") as pbar:
                 for qid, query in queries.items():
-                    # 将查询任务提交到线程池，包含 docid 的选择逻辑
+
                     future = executor.submit(
                         process_query, model, tokenizer, docid_to_smtids, qid, query, query2doc_pos, all_docids, args.neg_nums, args.batch_size
                     )
                     futures.append(future)
 
-                # 获取任务结果
+
                 for future in as_completed(futures):
                     qid, result = future.result()
                     rec_loss[qid] = result
-                    pbar.update(1)  # 更新进度条
+                    pbar.update(1)  
 
-                    # 保存中间结果
+
                     with open(args.output_file, 'w') as fout:
                         json.dump(rec_loss, fout)
 

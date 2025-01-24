@@ -168,7 +168,6 @@ def compute_losses_for_query(model, tokenizer, fm_index, q, data_mapping, args):
     pos_loss = []
     neg_loss = []
     
-    # 并行计算正负样本的损失
     for pos in positive_idens:
         pos_loss.append(compute_doc_loss_llama(model, tokenizer, q, pos))
     for neg in negative_idens:
@@ -217,12 +216,12 @@ def main():
     model = LlamaForCausalLM.from_pretrained(base_path, torch_dtype=precision, device_map='auto')
     tokenizer = LlamaTokenizer.from_pretrained(model_path)
 
-    model = PeftModel.from_pretrained(
-                model,
-                model_path,
-                torch_dtype=precision,
-                device_map='auto'
-            )
+    # model = PeftModel.from_pretrained(
+    #             model,
+    #             model_path,
+    #             torch_dtype=precision,
+    #             device_map='auto'
+    #         )
     tokenizer.padding_side = "right"
     tokenizer.pad_token = tokenizer.eos_token
     model.config.pad_token_id = model.config.eos_token_id

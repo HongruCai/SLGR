@@ -37,12 +37,12 @@ def fit_scaling_law(n, l, restarts=50):
     return best_result, best_r_squared
 
 # 数据组 1
-n1 = np.array([44057088, 198229248, 704769024, 2818699264, 11274422272], dtype=np.float32)
-l1 = np.array([0.003739327519766013, 0.00365354820880983, 0.003618691318817766, 0.0035889147738936734, 0.003575122915571207], dtype=np.float32)
+n1 = np.array([44057088, 198229248, 704769024, 2818699264, ], dtype=np.float32)
+l1 = np.array([46.6, 50.3, 53.5, 54.6, ], dtype=np.float32)
 
 # 数据组 2
-n2 = np.array([6607343616, 12852024320, 68714504192], dtype=np.float32)
-l2 = np.array([0.003349998694460214, 0.003293957555899526, 0.0032800482437811704], dtype=np.float32)
+# n2 = np.array([6607343616, 12852024320, 68714504192], dtype=np.float32)
+# l2 = np.array([0.003349998694460214, 0.003293957555899526, 0.0032800482437811704], dtype=np.float32)
 
 # 拟合数据组 1
 result1, r_squared1 = fit_scaling_law(n1, l1)
@@ -50,19 +50,26 @@ a1, b1, c1 = result1.x
 n1_smooth = np.logspace(np.log10(n1.min()), np.log10(n1.max()), 1000)
 predicted_l1 = scaling_law(result1.x, n1_smooth)
 
+n_new = 11274422272 # 例如，模型大小为 5000
+
+# 使用最优参数计算预测值
+l_new = scaling_law(result1.x, np.array([n_new]))
+
+print(f"对于模型大小 n={n_new}，预测的 Loss 值为 {l_new[0]}")
+
 # 拟合数据组 2
-result2, r_squared2 = fit_scaling_law(n2, l2)
-a2, b2, c2 = result2.x
-n2_smooth = np.logspace(np.log10(n2.min()), np.log10(n2.max()), 1000)
-predicted_l2 = scaling_law(result2.x, n2_smooth)
+# result2, r_squared2 = fit_scaling_law(n2, l2)
+# a2, b2, c2 = result2.x
+# n2_smooth = np.logspace(np.log10(n2.min()), np.log10(n2.max()), 1000)
+# predicted_l2 = scaling_law(result2.x, n2_smooth)
 
 # 绘制图像
 plt.figure(figsize=(10, 7))
 plt.scatter(n1, l1, color='red', label='Data Group 1')
 plt.plot(n1_smooth, predicted_l1, color='blue', label=f'Fit Group 1\n$a={a1:.4f}$, $b={b1:.4f}$, $c={c1:.4f}$\n$R^2={r_squared1:.4f}$')
 
-plt.scatter(n2, l2, color='orange', label='Data Group 2')
-plt.plot(n2_smooth, predicted_l2, color='green', label=f'Fit Group 2\n$a={a2:.4f}$, $b={b2:.4f}$, $c={c2:.4f}$\n$R^2={r_squared2:.4f}$')
+# plt.scatter(n2, l2, color='orange', label='Data Group 2')
+# plt.plot(n2_smooth, predicted_l2, color='green', label=f'Fit Group 2\n$a={a2:.4f}$, $b={b2:.4f}$, $c={c2:.4f}$\n$R^2={r_squared2:.4f}$')
 
 plt.xscale('log')  # 对数刻度
 plt.xlabel("Model Size (n)")
@@ -75,4 +82,4 @@ plt.show()
 
 # 打印结果
 print(f"Group 1: Scaling Law: l = ({a1:.4f} / n) ^ {b1:.4f} + {c1:.4f}, R² = {r_squared1:.4f}")
-print(f"Group 2: Scaling Law: l = ({a2:.4f} / n) ^ {b2:.4f} + {c2:.4f}, R² = {r_squared2:.4f}")
+# print(f"Group 2: Scaling Law: l = ({a2:.4f} / n) ^ {b2:.4f} + {c2:.4f}, R² = {r_squared2:.4f}")

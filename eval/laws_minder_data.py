@@ -8,7 +8,6 @@ from matplotlib.ticker import MaxNLocator
 # MINDER LLAMA Data
 # n = np.array([117760, 235520, 353280, 471040, 588800], dtype=np.float32)
 n = np.array([ 117760,  235520, 353280,471040, 588800], dtype=np.float32)
-
 l = np.array([0.003413291978135587, 0.003353927870270544,0.0033509868940814346,0.0033502276147056305, 0.003349998694460214], dtype=np.float32)
 
 
@@ -113,11 +112,11 @@ predicted_l_smooth = scaling_law(best_result.x, n_smooth)
 log_predicted_l_smooth = np.log(predicted_l_smooth - c_opt)
 
 
-plt.figure(figsize=(7, 5))  # 宽高可以根据需要调整，3.5x3.5 英寸适合一栏
-plt.rcParams['font.size'] = 16  # 设置字体大小为 14pt
+plt.figure(figsize=(6, 2.5))  # 宽高可以根据需要调整，3.5x3.5 英寸适合一栏
+plt.rcParams['font.size'] = 12  # 设置字体大小为 14pt
 plt.rcParams['font.weight'] = 'bold'
 # 绘制散点图
-plt.scatter(n, log_l, color='#4e87b2', s=200, label='LLaMA-7B')
+plt.scatter(n, log_l, color='#4e87b2', s=100, label='LLaMA-7B')
 
 # 绘制拟合曲线
 plt.plot(n_smooth, log_predicted_l_smooth, color='#4d4d4d', linestyle='--', linewidth=3)

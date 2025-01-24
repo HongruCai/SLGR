@@ -7,16 +7,15 @@ models=(
     "t5-11b"
 )
 
-# 训练参数
+
 output_dir_base="output/T5"
 train_epoch=1
 learning_rate=1e-3
 train_batch_size=256
 source_length=64
-use_bf16="--bf16"  # 使用 bf16 模式
-use_lora="--lora"  # 使用 LoRA 训练
+use_bf16="--bf16"  
+use_lora="--lora" 
 
-# 循环训练不同大小的模型
 for model_name in "${models[@]}"; do
     echo "Training model: ${model_name}"
     

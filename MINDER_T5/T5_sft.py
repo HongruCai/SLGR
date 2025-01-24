@@ -4,7 +4,6 @@ from datasets import Dataset, load_dataset
 import os
 from peft import LoraConfig, get_peft_model, TaskType
  
-# 设置命令行参数
 def parse_args():
     parser = argparse.ArgumentParser(description="Train T5 with multiple GPUs and Weights & Biases support")
     
@@ -17,11 +16,10 @@ def parse_args():
     parser.add_argument("--num_epochs", type=int, default=3, help="Number of training epochs")
     parser.add_argument("--weight_decay", type=float, default=0.0, help="Weight decay")
     parser.add_argument('--warmup_ratio', type=float, default=0.1, help='warmup ratio')
-    # Weights & Biases (wandb) 参数
     #parser.add_argument("--project_name", type=str, default="Scaling", help="Weights & Biases project name")
     # parser.add_argument("--scenario_name", type=str, default="T5_scaling", help="Weights & Biases project name")
     # parser.add_argument("--experiment_name", type=str, default="T5_small", help="Weights & Biases project name")
-    # parser.add_argument("--run_dir", type=str, default='/storage_fast/zzhang/DPO/T5_scaling_wandb' , help="Weights & Biases project name")
+    # parser.add_argument("--run_dir", type=str, default='/T5_scaling_wandb' , help="Weights & Biases project name")
 
     # parser.add_argument("--fp16", action="store_true", help="Use mixed precision (fp16)")
     #parser.add_argument("--gpus", type=int, default=1, help="Number of GPUs to use")
@@ -32,8 +30,8 @@ def parse_args():
     return args
 
 def preprocess_function(examples, tokenizer):
-    inputs = examples['source']  # 读取 source 作为输入
-    targets = examples['target']  # 读取 target 作为目标
+    inputs = examples['source']  
+    targets = examples['target'] 
     model_inputs = tokenizer(inputs, max_length=512, truncation=True)
     
     with tokenizer.as_target_tokenizer():

@@ -222,7 +222,7 @@ import argparse
 # parser.add_argument("--file", type=str, default="")
 # args = parser.parse_args()
 
-file_path = "result/t5_small_rescore_bodyonly.json"
+file_path = "result/t5_base_res_1.json"
 query_dict = {}
 all_dict = {}
 

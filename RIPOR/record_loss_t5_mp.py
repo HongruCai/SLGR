@@ -69,7 +69,6 @@ def compute_loss_batch(model, tokenizer, inputs, ids_list, device='cuda'):
         return_tensors="pt"
     )
 
-    # 将 ids_list 转换为批量的 labels
     labels_list = [" ".join(f"c_{c}" for c in ids) for ids in ids_list]
     labels_encodings = tokenizer(
         labels_list,
@@ -79,7 +78,6 @@ def compute_loss_batch(model, tokenizer, inputs, ids_list, device='cuda'):
         return_tensors="pt"
     )
 
-    # 前向传播，计算 loss
     with torch.no_grad():
         outputs = model(
             input_ids=input_encodings["input_ids"].to(device),
@@ -90,26 +88,23 @@ def compute_loss_batch(model, tokenizer, inputs, ids_list, device='cuda'):
 
 
 def process_query(model, tokenizer, docid_to_smtids, qid, query, query2doc_pos, all_docids, neg_nums, batch_size=32):
-    """
-    处理单个 query 的正负样本 loss 计算，支持负样本分批处理。
-    """
-    # 获取正样本和负样本
+
     pos_docs = query2doc_pos.get(qid, [])
     docs = list(all_docids - set(pos_docs))
     neg_docs = random.sample(docs, neg_nums)
 
-    # 获取正负样本的 SMT IDs
+
     pos_ids = [docid_to_smtids[docid][1:] for docid in pos_docs]
     neg_ids = [docid_to_smtids[docid][1:] for docid in neg_docs]
     input_text = query
 
-    # 正样本 loss 计算
+
     pos_losses = []
     for pos_input, pos_id in zip(len(pos_docs) * [input_text], pos_ids):
         loss = compute_loss(model, tokenizer, [pos_input], pos_id)
         pos_losses.append(loss)
 
-    # 负样本 loss 分批计算
+
     neg_losses = []
     for i in range(0, len(neg_ids), batch_size):
         batch_neg_ids = neg_ids[i:i + batch_size]
@@ -166,19 +161,19 @@ if __name__ == '__main__':
 
         with tqdm(total=total_queries, desc="Processing queries") as pbar:
             for qid, query in queries.items():
-                # 将查询任务提交到线程池，包含 docid 的选择逻辑
+                
                 future = executor.submit(
                     process_query, model, tokenizer, docid_to_smtids, qid, query, query2doc_pos, all_docids, args.neg_nums, args.batch_size
                 )
                 futures.append(future)
 
-            # 获取任务结果
+
             for future in as_completed(futures):
                 qid, result = future.result()
                 rec_loss[qid] = result
-                pbar.update(1)  # 更新进度条
+                pbar.update(1)  
 
-                # 保存中间结果
+
                 with open(args.output_path, 'w') as fout:
                     json.dump(rec_loss, fout)
 

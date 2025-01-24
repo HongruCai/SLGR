@@ -222,6 +222,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--file", type=str, default="")
 args = parser.parse_args()
 
+args.file = "result/t5_3b_res.json"
 query_dict = {}
 all_dict = {}
 hits = [0.0] * 100
@@ -268,6 +269,8 @@ with open(args.file, "r") as f:
         reciprocal_ranks.append(rr_10)
 
         for i, ctx in enumerate(retrieved_p_texts):
+            if i >= 100:
+                break
             retrieved_p_text = ctx['title'] + " " + ctx['text'].split("||")[0]
             if has_answer(answers, retrieved_p_text):
                 query_dict[question] = 1

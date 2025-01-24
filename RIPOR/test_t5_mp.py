@@ -41,7 +41,6 @@ class ValidationDataset(Dataset):
     def __getitem__(self, idx):
         query = self.queries[idx]
         
-        # 对 query 进行分词
         query_encodings = self.tokenizer(
             query,
             padding="max_length",
@@ -55,11 +54,9 @@ class ValidationDataset(Dataset):
 
 def load_all_smtids(docid_to_smtid_path, tokenizer):
 
-    # 加载 docid_to_smtid 数据
     with open(docid_to_smtid_path, "r") as f:
         docid_to_smtid = ujson.load(f)
-    
-    # 提取所有 smtid
+
     all_smtids = []
     for smtids in tqdm(docid_to_smtid.values(), desc="Building smtid list"):
         # if smtids[1:] not in all_smtids:
@@ -71,10 +68,10 @@ def load_all_smtids(docid_to_smtid_path, tokenizer):
 
 
 def main(args):
-    # 初始化分布式状态
+
     distributed_state = PartialState()
 
-    # 加载 tokenizer 和模型
+
     tokenizer = T5Tokenizer.from_pretrained(args.model_path)
     base_model = T5ForConditionalGeneration.from_pretrained(args.base_model_path, torch_dtype=torch.bfloat16)
     base_model.resize_token_embeddings(len(tokenizer))
@@ -86,7 +83,6 @@ def main(args):
     model.to(args.device)
     model.eval()
 
-    # 加载数据集
     dataset = ValidationDataset(tsv_path=args.dev_queries, tokenizer=tokenizer)
     print("Dataset loaded, size: ", len(dataset))
     data_collator = DataCollatorWithPadding(
@@ -96,13 +92,12 @@ def main(args):
         dataset, batch_size=args.batch_size, shuffle=False, collate_fn=data_collator
     )
 
-    # 加载 Trie
+
     code_list = load_all_smtids(args.docid_to_smtid, tokenizer)
     condidate_trie = Trie([[0] + x for x in code_list])
     print("\nTrie loaded, possible response count: ", len(condidate_trie))
     prefix_allowed_tokens = prefix_allowed_tokens_fn(condidate_trie)
 
-    # 生成结果
     results = []
     with torch.no_grad():
         for batch in tqdm(dataloader, desc="Evaluating queries"):

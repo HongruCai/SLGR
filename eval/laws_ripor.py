@@ -46,14 +46,14 @@ l1 = np.array([0.0038975734404411693, 0.0038975047941049498,  0.0039006873079361
 
 
 # 数据组 2
-# n2 = np.array([6607343616, 12852024320, 68714504192], dtype=np.float32)
-# l2 = np.array([0.003349998694460214, 0.003293957555899526, 0.0032800482437811704], dtype=np.float32)
+n2 = np.array([6607343616, 12852024320, 68714504192], dtype=np.float32)
+l2 = np.array([0.003890741781243236, 0.003894060372130427, 0.003890], dtype=np.float32)
 
 # 拟合数据组 1
-result1, r_squared1 = fit_scaling_law(n1, l1)
-a1, b1, c1 = result1.x
-n1_smooth = np.logspace(np.log10(n1.min()), np.log10(n1.max()), 1000)
-predicted_l1 = scaling_law(result1.x, n1_smooth)
+# result1, r_squared1 = fit_scaling_law(n1, l1)
+# a1, b1, c1 = result1.x
+# n1_smooth = np.logspace(np.log10(n1.min()), np.log10(n1.max()), 1000)
+# predicted_l1 = scaling_law(result1.x, n1_smooth)
 
 # 拟合数据组 2
 # result2, r_squared2 = fit_scaling_law(n2, l2)
@@ -64,14 +64,14 @@ predicted_l1 = scaling_law(result1.x, n1_smooth)
 
 
 # 绘制图像
-plt.figure(figsize=(7, 5))
+plt.figure(figsize=(6, 2.5))
 
-plt.rcParams['font.size'] = 15  # 设置字体大小为 14pt
+plt.rcParams['font.size'] = 12  # 设置字体大小为 14pt
 plt.rcParams['font.weight'] = 'bold'
-plt.scatter(n1, l1, color='#f3d266', label='T5 Series', s=150)
+plt.scatter(n1, l1, color='#f3d266', label='T5 Series', s=100)
 # plt.plot(n1_smooth, predicted_l1, color='#4d4d4d', linestyle='--',linewidth=2)
 
-# plt.scatter(n2, l2, color='#4e87b2', label='LLaMA Series',s=100)
+plt.scatter(n2, l2, color='#4e87b2', label='LLaMA Series',s=100)
 # plt.plot(n2_smooth, predicted_l2, color='#4d4d4d', linestyle='--',linewidth=2)
 
 # plt.axhline(c1, color='#f3d266', linestyle=':',linewidth=3)
@@ -80,10 +80,12 @@ plt.scatter(n1, l1, color='#f3d266', label='T5 Series', s=150)
 
 # 直接连线
 plt.plot(n1, l1, color='#4d4d4d', linestyle='--', linewidth=3)
+plt.plot(n2, l2, color='#4d4d4d', linestyle='--', linewidth=3)
 
 # plt.ylim(0.0031, 0.0038)
 plt.gca().yaxis.set_major_locator(MaxNLocator(nbins=5))  
 plt.gca().yaxis.set_major_formatter(FormatStrFormatter('%.6f'))  # 限制小数位数为 4 位
+# 实验部分
 plt.xscale('log')
 plt.xlim(0, 1e11)
 
@@ -93,5 +95,5 @@ plt.savefig('./result/scaling_law_ripor.svg', format="svg", bbox_inches='tight')
 plt.show()
 
 # 打印结果
-print(f"Group 1: Scaling Law: l = ({a1} / n) ^ {b1} + {c1}, R² = {r_squared1 }")
+# print(f"Group 1: Scaling Law: l = ({a1} / n) ^ {b1} + {c1}, R² = {r_squared1 }")
 # print(f"Group 2: Scaling Law: l = ({a2} / n) ^ {b2} + {c2 }, R² = {r_squared2 }")

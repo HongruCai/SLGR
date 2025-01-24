@@ -1,4 +1,4 @@
-# batch size最大为256
+
 
 accelerate launch --num_processes 8 record_loss_t5_mp.py \
     --model_path ./output/T5_/t5-small \

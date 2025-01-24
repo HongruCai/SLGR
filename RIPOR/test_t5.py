@@ -38,7 +38,6 @@ class ValidationDataset(Dataset):
     def __getitem__(self, idx):
         query = self.queries[idx]
         
-        # 对 query 进行分词
         query_encodings = self.tokenizer(
             query,
             padding="max_length",
@@ -51,18 +50,17 @@ class ValidationDataset(Dataset):
     
 def load_all_smtids(docid_to_smtid_path, tokenizer):
 
-    # 加载 docid_to_smtid 数据
     with open(docid_to_smtid_path, "r") as f:
         docid_to_smtid = ujson.load(f)
     
-    # 提取所有 smtid
+   
     all_smtids = []
     for smtids in tqdm(docid_to_smtid.values(), desc="Building smtid list"):
         # if smtids[1:] not in all_smtids:
         # labels = " ".join(f"c_{c}" for c in smtids[1:])
         # labels = tokenizer.encode(labels)
         smtids = [int(smtid)+1 for smtid in smtids]
-        all_smtids.append(smtids[1:])  # 添加去掉第一个元素的列表
+        all_smtids.append(smtids[1:]) 
     
     return all_smtids
 
