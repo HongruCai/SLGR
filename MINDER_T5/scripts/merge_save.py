@@ -14,27 +14,25 @@ def parse_args():
 def main():
     args = parse_args()
     
-    # 加载基础 T5 模型
+  
     print(f"Loading base model: {args.base_model_name}")
     base_model = T5ForConditionalGeneration.from_pretrained(args.base_model_name)
     
-    # 加载 LoRA 微调模型
+
     print(f"Loading LoRA model from: {args.lora_model_path}")
     lora_model = PeftModel.from_pretrained(base_model, args.lora_model_path)
     
-    # 合并权重
+
     print("Merging LoRA weights into base model...")
     lora_model.merge_and_unload()
     
-    # 创建输出目录
+
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
-    
-    # 处理 state_dict，去掉前缀 "model."
+
     state_dict = lora_model.base_model.state_dict()
     clean_state_dict = {k.replace("model.", ""): v for k, v in state_dict.items()}
-    
-    # 保存模型权重
+
     torch.save(clean_state_dict, os.path.join(args.output_dir, "pytorch_model.bin"))
     print(f"Model weights saved to: {os.path.join(args.output_dir, 'pytorch_model.bin')}")
     

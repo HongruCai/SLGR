@@ -153,7 +153,6 @@ def process_query(model, tokenizer, fm_index, q, answers, total_docs, num_neg_sa
     negative_idens = []
     poditive_docs = []
 
-    # 处理正样本
     for a in answers:
         tkn_a = tokenizer(' ' + a)
         pos_rg = fm_index.get_range(tkn_a['input_ids'][:-1])
@@ -165,7 +164,6 @@ def process_query(model, tokenizer, fm_index, q, answers, total_docs, num_neg_sa
         positive_idens.append({'title': title, 'text': text, 'queries': queries})
         poditive_docs.append(pos_doc)
 
-    # 采样负样本
     available_neg_docs = list(set(range(total_docs)) - set(poditive_docs))
     neg_docs = random.sample(available_neg_docs, num_neg_samples)
     for neg_doc in neg_docs:
@@ -174,7 +172,7 @@ def process_query(model, tokenizer, fm_index, q, answers, total_docs, num_neg_sa
         title, text, queries = extract_parts(doc_content, q)
         negative_idens.append({'title': title, 'text': text, 'queries': queries})
 
-    # 计算正样本和负样本的损失
+
     pos_loss = [compute_doc_loss(model, tokenizer, q, pos) for pos in positive_idens]
     neg_loss = [compute_doc_loss(model, tokenizer, q, neg) for neg in negative_idens]
 
@@ -184,13 +182,13 @@ def process_query(model, tokenizer, fm_index, q, answers, total_docs, num_neg_sa
 def main():
     args = parse_args()
     
-    # 加载索引
+
     print('Loading index...')
     fm_index = FMIndex.load(args.index)
     print('Index loaded')
     print('Index size:', fm_index.n_docs)
     
-    # 加载查询和答案映射
+
     data_mapping = {}
     with open(args.csv_file, "r", encoding="utf-8") as f:
         reader = csv.reader(f, delimiter="\t", quotechar='"')
@@ -200,7 +198,7 @@ def main():
     
     os.makedirs(os.path.dirname(args.output_file), exist_ok=True)
 
-    # 加载模型和分词器
+
     tokenizer = T5Tokenizer.from_pretrained(args.model_path)
     precision = get_model_precision()
     model = T5ForConditionalGeneration.from_pretrained(args.model_path, torch_dtype=precision).to('cuda')
@@ -208,7 +206,7 @@ def main():
     
     rec = {}
     
-    # 多线程处理查询
+
     with ThreadPoolExecutor(max_workers=args.num_processes) as executor:
         futures = []
         total_queries = len(data_mapping)
@@ -221,14 +219,13 @@ def main():
                 q, result = future.result()
                 rec[q] = result
                 
-                # 更新进度条
+
                 pbar.update(1)
 
-                # 保存中间结果
+
                 with open(args.output_file, 'w') as f_out:
                     json.dump(rec, f_out)
     
-    # 保存最终结果
     with open(args.output_file, 'w') as f_out:
         json.dump(rec, f_out)
     print(f"Results saved to {args.output_file}")

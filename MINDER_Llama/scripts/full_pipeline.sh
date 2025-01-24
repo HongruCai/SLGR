@@ -1,5 +1,5 @@
 
-# 训练
+
 
 models=(
     "meta-llama/Llama-2-70b-chat-hf" 
@@ -12,7 +12,7 @@ data_path="../data/training"
 output_dir="output/"
 train_epoch=1
 learning_rate=3e-4
-train_batch_size=256 #可能爆显存，可以根据情况调整，不影响结果
+train_batch_size=256 
 source_length=256
 save_total_limit=1
 logging_steps=500

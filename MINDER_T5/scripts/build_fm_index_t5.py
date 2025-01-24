@@ -28,7 +28,7 @@ def process(line):
 
 
 def preprocess_file(input_path, labels, format="kilt", lowercase=False, tokenize=False, pid2query=None):
-    max_lines = 1000  # 设置要处理的最大行数
+    max_lines = 1000 
     line_count = 0 
 
     if pid2query:
