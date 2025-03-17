@@ -1,23 +1,23 @@
-python ./seal/evaluate_output.py --file result/t5_base_res_5.json
-# t5-small
-# TOKENIZERS_PARALLELISM=false \
-# python ./seal/search.py \
-# --topics_format dpr_qas \
-# --topics ../data/NQ/nq-test.csv \
-# --output_format dpr \
-# --output result/t5_small_res.json \
-# --checkpoint ./output/t5-small  \
-# --backbone t5-small \
-# --jobs 20 \
-# --progress \
-# --device cuda:0 \
-# --batch_size 64 \
-# --beam 15 \
-# --decode_query false \
-# --fm_index ../data/FMIndex/T5/t5_psgs_w100.fm_index \
-# --dont_fairseq_checkpoint \
-# --dont_decode_title \
-# --dont_unigram_scores 
+
+t5-small
+TOKENIZERS_PARALLELISM=false \
+python ./seal/search.py \
+--topics_format dpr_qas \
+--topics ../data/NQ/nq-test.csv \
+--output_format dpr \
+--output result/t5_small_res.json \
+--checkpoint ./output/t5-small  \
+--backbone t5-small \
+--jobs 20 \
+--progress \
+--device cuda:0 \
+--batch_size 64 \
+--beam 15 \
+--decode_query false \
+--fm_index ../data/FMIndex/T5/t5_psgs_w100.fm_index \
+--dont_fairseq_checkpoint \
+--dont_decode_title \
+--dont_unigram_scores 
 
 # t5-base
 # TOKENIZERS_PARALLELISM=false \
