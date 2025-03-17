@@ -7,7 +7,7 @@ Generative retrieval has emerged as a novel paradigm that leverages large langua
 
 ## Requirements
 
-We need two different environments to run the experiments: 
+To run the experiments, two different environments are required: one for MINDER_LLaMA and RIPOR, and another for MINDER_T5.
 
 For MINDER_Llama and RIPOR:
 
@@ -27,20 +27,24 @@ conda activate mt5
 
 ## Data
 
-We use NQ dataset for MINER experiments and MSMARCO for RIPOR experiments.
-The preprocessed data and FMIndex can be downloaded from [Huggingface](https://huggingface.co/datasets/HenryCai/SLGR_data), and you can put the data in the `data` folder.
-The FMIndex should work well if the environment is set up correctly, but we suggest re-building the FMIndex in your environment.
+We use the following datasets:
+
+- MINDER experiments: NQ (Natural Questions) dataset.
+- RIPOR experiments: MSMARCO dataset.
+The preprocessed data and FMIndex are available for download on [Huggingface](https://huggingface.co/datasets/HenryCai/SLGR_data). Place the data in the `data` folder.
+
+Although the FMIndex should work if the environment is set up correctly, we recommend rebuilding the FMIndex in your environment for best results.
 
 ## Experiments
 
 ### MINDER
 
-[MINDER](https://arxiv.org/abs/2305.16675) is a generative retrieval method that leverages text spans (body text, title, and pseudo-query) as document identifiers. For simplicity, we only use the body text as the document identifier. 
+[MINDER](https://arxiv.org/abs/2305.16675) is a generative retrieval method that uses text spans (e.g., body text, title, and pseudo-query) as document identifiers. For simplicity, we use only the body text as the document identifier.
 
 #### MINDER_LLaMA
 1. Install FMIndex:
 
-Follow the instructions in the [SEAL](https://github.com/facebookresearch/SEAL). You may need to clone the SEAL repository to install the sdsl-lite.
+Follow the instructions in the [SEAL](https://github.com/facebookresearch/SEAL) repository to install the necessary dependencies (you may need to clone the SEAL repo to install sdsl-lite).
 
 ```bash
 cd MINDER_LLaMA 
@@ -67,7 +71,7 @@ bash scripts/eval_loss.sh
 
 1. Install FMIndex:
 
-The steps are the same as MINDER_LLaMA, but we need another environment.
+The steps are similar to MINDER_LLaMA, but you will use a different environment.
 
 ```bash
 cd MINDER_T5
@@ -103,7 +107,7 @@ conda activate mllama
 
 2. Data preparation:
 
-We use the MSMARCO dataset provided by [RIPOR](https://github.com/HansiZeng/RIPOR).
+We use the MSMARCO dataset provided by [RIPOR](https://github.com/HansiZeng/RIPOR) repository.
 
 3. Run the experiments
 
@@ -125,9 +129,9 @@ bash scripts/eval_loss_t5.sh
 
 
 ### Note
-1. For both two methods, you can change the model name to test different sizes of models.
-2. After evaluating the loss, you can calculate the contrastive generation loss according to the paper.
-3. For inference scaling, you can change the beam size in MINDER test scripts to record the performance.
+1. **Model Sizes**: For both methods, you can test different model sizes by changing the model name.
+2. **CGL Calculation**: After evaluating the loss, you can calculate the contrastive generation loss as described in the paper.
+3. **Inference Scaling**: For inference scaling, you can adjust the beam size in the MINDER test scripts to observe performance changes.
 
 ## Citation
 
