@@ -5,7 +5,7 @@
 
 We study how model size, training data, and inference-time compute affect the performance of generative retrieval, a paradigm where LLMs generate document identifiers. To enable robust comparison, we introduce a new evaluation metric based on contrastive entropy and generation loss. Our results show that larger LLMs, especially decoder-only models like LLaMA, benefit more from increased inference compute. N-gram-based decoding aligns well with scaling trends, highlighting key design choices for future generative retrieval systems.
 
-> For more details, refer to our paper accepted to SIGIR 2025: [Exploring Training and Inference Scaling Laws in Generative Retrieval](https://arxiv.org/abs/2503.18941).
+> For more details, refer to our paper accepted to **SIGIR 2025**: [Exploring Training and Inference Scaling Laws in Generative Retrieval](https://arxiv.org/abs/2503.18941).
 
 ## 📦 Requirements
 
@@ -143,7 +143,7 @@ If you use source code or dataset in your research, please cite our paper:
   title={Large Language Models Empowered Personalized Web Agents},
   author={Hongru Cai and Yongqi Li and Ruifeng Yuan and Wenjie Wang and Zhen Zhang and Wenjie Li and Tat-Seng Chua},
   booktitle={Proceedings of the 48th International ACM SIGIR Conference on Research and Development in Information Retrieval},
-  series={SIGIR '25},
+  series={SIGIR'25},
   year={2025}
 }
 
