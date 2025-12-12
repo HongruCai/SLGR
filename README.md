@@ -33,7 +33,7 @@ We use the following datasets:
 
 - MINDER experiments: NQ (Natural Questions) dataset.
 - RIPOR experiments: MSMARCO dataset.
-The preprocessed data and FMIndex are available for download on [Huggingface](https://huggingface.co/datasets/HenryCai/SLGR_data). Place the data in the `data` folder.
+The preprocessed data and FMIndex are available for download on [Google Drive](https://drive.google.com/drive/folders/1Nka6L8RkbIg38VYvw1uYROi0NcRVaqid?usp=sharing). Place the data in the `data` folder.
 
 Although the FMIndex should work if the environment is set up correctly, we recommend rebuilding the FMIndex in your environment for best results.
 
